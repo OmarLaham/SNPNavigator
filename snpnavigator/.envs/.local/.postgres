@@ -1,0 +1,7 @@
+# PostgreSQL
+# ------------------------------------------------------------------------------
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=snpnavigator
+POSTGRES_USER=zHJLgxSVyyLCoLKIuMNIRVpBNFKWCDQg
+POSTGRES_PASSWORD=lGZWX1Li8LlMVBfXGuR0I7uKVLbRyIINKGlf2s2nsn0OSnhehB8bwkajkDdHCzp1
