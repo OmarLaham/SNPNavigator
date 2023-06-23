@@ -1,5 +1,138 @@
 {% extends "base.html" %}
 
 {% block content %}
-starting page
+
+  <h4 class="text-center">Visualization gives better insights!</h4>
+  <h4 class="text-center">Please fill the following form.</h4>
+  <div class="row m-3">
+    <div class="col-3"></div>
+    <div class="col-6">
+      <form>
+        <div class="mb-3">
+          <label for="txtTitle" class="form-label">Title</label>
+          <input type="text" class="form-control" id="txtTitle" aria-describedby="titleHelp">
+          <div id="titleHelp" class="form-text">Please enter a title for your experiment.</div>
+        </div>
+        <div class="accordion" id="accordionExample">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                Condition #1
+              </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+              <div class="accordion-body">
+                <div class="mb-3">
+                  <label for="conditionName1" class="form-label">Condition Name</label>
+                  <input type="text" class="form-control" id="conditionName1" aria-describedby="conditionNameHelp">
+                  <div id="conditionNameHelp" class="form-text">e.g. SZ, BD, MDD.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="gwasFile1" class="form-label">Condition GWAS File</label>
+                  <input class="form-control" type="file" id="gwasFile1" aria-describedby="gwasHelp">
+                  <div id="gwasHelp" class="form-text">Only .csv and .tsv formats are supported.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="pvalColName1" class="form-label">P-val Column Name</label>
+                  <input type="text" class="form-control" id="pvalColName1" aria-describedby="pvalHelp">
+                  <div id="pvalHelp" class="form-text">The name of the p-value column in your uploaded file.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="chromColName1" class="form-label">Chromosome Column Name</label>
+                  <input type="text" class="form-control" id="chromColName1" aria-describedby="chromHelp">
+                  <div id="chromHelp" class="form-text">The name of the chromosome column in your uploaded file.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="posColName1" class="form-label">Position Column Name</label>
+                  <input type="text" class="form-control" id="posColName1">
+                  <div id="pvalHelp" class="form-text">The name of the pos column in your uploaded file.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                Condition #2
+              </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+              <div class="accordion-body">
+                <div class="mb-3">
+                  <label for="conditionName2" class="form-label">Condition Name</label>
+                  <input type="text" class="form-control" id="conditionName2" aria-describedby="conditionNameHelp">
+                  <div id="conditionNameHelp" class="form-text">e.g. SZ, BD, MDD.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="gwasFile2" class="form-label">Condition GWAS File</label>
+                  <input class="form-control" type="file" id="gwasFile2" aria-describedby="gwasHelp">
+                  <div id="gwasHelp" class="form-text">Only .csv and .tsv formats are supported.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="pvalColName2" class="form-label">P-val Column Name</label>
+                  <input type="text" class="form-control" id="pvalColName2" aria-describedby="pvalHelp">
+                  <div id="pvalHelp" class="form-text">The name of the p-value column in your uploaded file.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="chromColName2" class="form-label">Chromosome Column Name</label>
+                  <input type="text" class="form-control" id="chromColName2" aria-describedby="chromHelp">
+                  <div id="chromHelp" class="form-text">The name of the chromosome column in your uploaded file.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="posColName2" class="form-label">Position Column Name</label>
+                  <input type="text" class="form-control" id="posColName2">
+                  <div id="pvalHelp" class="form-text">The name of the pos column in your uploaded file.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                Condition #3
+              </button>
+            </h2>
+            <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+              <div class="accordion-body">
+                <div class="mb-3">
+                  <label for="conditionName3" class="form-label">Condition Name</label>
+                  <input type="text" class="form-control" id="conditionName3" aria-describedby="conditionNameHelp">
+                  <div id="conditionNameHelp" class="form-text">e.g. SZ, BD, MDD.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="gwasFile3" class="form-label">Condition GWAS File</label>
+                  <input class="form-control" type="file" id="gwasFile3" aria-describedby="gwasHelp">
+                  <div id="gwasHelp" class="form-text">Only .csv and .tsv formats are supported.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="pvalColName3" class="form-label">P-val Column Name</label>
+                  <input type="text" class="form-control" id="pvalColName3" aria-describedby="pvalHelp">
+                  <div id="pvalHelp" class="form-text">The name of the p-value column in your uploaded file.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="chromColName3" class="form-label">Chromosome Column Name</label>
+                  <input type="text" class="form-control" id="chromColName3" aria-describedby="chromHelp">
+                  <div id="chromHelp" class="form-text">The name of the chromosome column in your uploaded file.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="posColName3" class="form-label">Position Column Name</label>
+                  <input type="text" class="form-control" id="posColName3">
+                  <div id="pvalHelp" class="form-text">The name of the pos column in your uploaded file.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <br /><br />
+        <div class="mb-3 form-check">
+          <input type="checkbox" class="form-check-input" id="exampleCheck1">
+          <label class="form-check-label" for="exampleCheck1">I agree on all the <a href="javascript:;">terms</a>.</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit & Visualize</button>
+      </form>
+    </div>
+    <div class="col-3"></div>
+  </div>
+
 {% endblock %}
