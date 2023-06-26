@@ -17,6 +17,10 @@
       <!-- Your stuff: Third-party CSS libraries go here -->
       <!-- bootstrap 5 min -->
       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+      <!-- idiogram: https://github.com/eweitz/ideogram -->
+      <script src="{% static 'js/ideogram.min.js' %}"></script>
+      <!-- data tables -->
+      <link href="https://cdn.datatables.net/v/dt/dt-1.13.4/datatables.min.css" rel="stylesheet"/>
       <!-- This file stores project-specific CSS -->
       <link href="{% static 'css/project.css' %}" rel="stylesheet">
     {% endblock %}
@@ -31,6 +35,8 @@
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
       <!-- JQuery 3 -->
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+      <!-- datatables Note: jQuery is a dependency -->
+      <script src="https://cdn.datatables.net/v/dt/dt-1.13.4/datatables.min.js"></script>
       <!-- place project specific Javascript in this file -->
       <script defer src="{% static 'js/project.js' %}"></script>
 

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% load static i18n %}
+
+{% block content %}
+
+  <div class="row">
+
+    <!-- sidebar -->
+    <div class="col col-4">
+      <h6>eQTL</h6>
+      eQTL options go here..
+      <hr />
+      <h6>ATAC-seq Peaks</h6>
+      <ul id="lst-ataq-seq-peaks" class="list-group">
+        <li class="list-group-item">
+          <input class="form-check-input me-1" type="checkbox" value="" id="atacCellType1">
+          <label class="form-check-label" for="atacCellType1">GABA</label>
+        </li>
+        <li class="list-group-item">
+          <input class="form-check-input me-1" type="checkbox" value="" id="atacCellType2">
+          <label class="form-check-label" for="atacCellType2">GLUT</label>
+        </li>
+        <li class="list-group-item">
+          <input class="form-check-input me-1" type="checkbox" value="" id="atacCellType3">
+          <label class="form-check-label" for="atacCellType3">Glias</label>
+        </li>
+      </ul>
+      <hr />
+      <h6>SNP Filter</h6>
+      <ul id="lst-snp-filter" class="list-group">
+        <li class="list-group-item">
+          <input class="form-check-input me-1" type="checkbox" value="" id="snpCpGIsland">
+          <label class="form-check-label" for="snpCpGIsland">Creates a CpG island</label>
+        </li>
+        <li class="list-group-item">
+          <input class="form-check-input me-1" type="checkbox" value="" id="snpCloseToAnotherPeak">
+          <label class="form-check-label" for="snpCloseToAnotherPeak">Close to another peak</label>
+        </li>
+      </ul>
+      <hr />
+      <h6>Other Disease</h6>
+      Included in the SNPs of:
+      <ul id="lst-snp-disease-match" class="list-group list-group-horizontal">
+        <li class="list-group-item">
+          <input class="form-check-input me-1" type="checkbox" value="" id="diseaseMatchBD">
+          <label class="form-check-label" for="diseaseMatchBD">BD</label>
+        </li>
+        <li class="list-group-item">
+          <input class="form-check-input me-1" type="checkbox" value="" id="diseaseMatchMDD">
+          <label class="form-check-label" for="diseaseMatchMDD">MDD</label>
+        </li>
+      </ul>
+      <br />
+      Not included in the SNPs of:
+      <ul id="lst-snp-disease-mismatch" class="list-group list-group-horizontal">
+        <li class="list-group-item">
+          <input class="form-check-input me-1" type="checkbox" value="" id="diseaseMismatchBD">
+          <label class="form-check-label" for="diseaseMismatchBD">BD</label>
+        </li>
+        <li class="list-group-item">
+          <input class="form-check-input me-1" type="checkbox" value="" id="diseaseMismatchMDD">
+          <label class="form-check-label" for="diseaseMismatchMDD">MDD</label>
+        </li>
+      </ul>
+    </div>
+
+    <!-- main -->
+    <div class="col col-8">
+      <div id="ideogramContainer"></div>
+
+      <br /><br />
+      
+      <div class="queryTabs">
+        <ul class="nav nav-tabs" id="">
+            <li class="nav-item">
+                <a href="#tabSNPs" class="nav-link active" data-bs-toggle="tab">SNPs</a>
+            </li>
+            <li class="nav-item">
+                <a href="#tabGenesAndPathways" class="nav-link" data-bs-toggle="tab">Genes & Pathways</a>
+            </li>
+            <li class="nav-item">
+                <a href="#tabOthers" class="nav-link" data-bs-toggle="tab">Other</a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="tabSNPs">
+              SNPs tab content..
+            </div>
+            <div class="tab-pane fade" id="tabGenesAndPathways">
+              <table id="dtGenesAndPathways" class="display">
+                  <thead>
+                      <tr>
+                          <th>Gene</th>
+                          <th>Pathway 1</th>
+                          <th>Pathway 2</th>
+                          <th>Pathway 3</th>
+                          <th>Pathway 4</th>
+                          <th>Pathway 5</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <tr>
+                          <td>Gene I</td>
+                          <td>X</td>
+                          <td></td>
+                          <td>X</td>
+                          <td></td>
+                          <td></td>
+                      </tr>
+                      <tr>
+                          <td>Gene II</td>
+                          <td></td>
+                          <td>X</td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                      </tr>
+                      <tr>
+                          <td>Gene III</td>
+                          <td>X</td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                          <td>X</td>
+                      </tr>
+                      <tr>
+                          <td>Gene IV</td>
+                          <td></td>
+                          <td></td>
+                          <td>X</td>
+                          <td></td>
+                          <td>X</td>
+                      </tr>
+                  </tbody>
+              </table>
+            </div>
+            <div class="tab-pane fade" id="tabOthers">
+              Others
+            </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <script src="{% static 'js/main.js' %}"></script>
+
+{% endblock %}
