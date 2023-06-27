@@ -47,6 +47,37 @@
                   <input type="text" class="form-control" id="posColName1">
                   <div id="pvalHelp" class="form-text">The name of the pos column in your uploaded file.</div>
                 </div>
+                <hr/>
+                <div class="mb-3">
+                  <label for="peaksFile" class="form-label">ATAC-seq Peaks File</label>
+                  <input class="form-control" type="file" id="peaksFile" aria-describedby="peaksHelp">
+                  <div id="peaksHelp" class="form-text">Only .csv and .tsv formats are supported. This file must include peaks annotation, the q-values of the peaks and the count matrix for subjects.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="peaksChromColName" class="form-label">Peak Chrom Column Name</label>
+                  <input type="text" class="form-control" id="peaksChromColName" aria-describedby="peaksChromColNameHelp">
+                  <div id="peaksChromColNameHelp" class="form-text">The name of the chromosome column in your uploaded peaks file.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="peaksStartColName" class="form-label">Peak Start Column Name</label>
+                  <input type="text" class="form-control" id="peaksStartColName" aria-describedby="peaksStartColNameHelp">
+                  <div id="peaksStartColNameHelp" class="form-text">The name of the peak start pos column in your uploaded peaks file.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="peaksEndColName" class="form-label">Peak End Column Name</label>
+                  <input type="text" class="form-control" id="peaksEndColName" aria-describedby="peaksEndColNameHelp">
+                  <div id="peaksEndColNameHelp" class="form-text">The name of the peak start pos column in your uploaded peaks file.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="peaksQValColName" class="form-label">Q-value Column Name</label>
+                  <input type="text" class="form-control" id="peaksQValColName" aria-describedby="peaksQValHelp">
+                  <div id="peaksQValHelp" class="form-text">The name of the q-value column in your uploaded peaks file.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="cntMatrixColNamingPattern" class="form-label">Count Matrix Column Naming Pattern</label>
+                  <input type="text" class="form-control" id="cntMatrixColNamingPattern" aria-describedby="cntMatrixColNamingPatternHelp">
+                  <div id="cntMatrixColNamingPatternHelp" class="form-text">The naming patter used for count matrix. e.g. [sub_id]_[cell_type_id]</div>
+                </div>
               </div>
             </div>
           </div>
