@@ -70,7 +70,7 @@
       <div id="ideogramContainer"></div>
 
       <br /><br />
-      
+
       <div class="queryTabs">
         <ul class="nav nav-tabs" id="">
             <li class="nav-item">
@@ -86,7 +86,40 @@
 
         <div class="tab-content">
             <div class="tab-pane fade show active" id="tabSNPs">
-              SNPs tab content..
+              <table id="dtSNPs" class="display">
+                  <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Chrom</th>
+                        <th>Pos</th>
+                        <th>P-val</th>
+                        <th>Operations</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <tr>
+                        <td>rs10484399</td>
+                        <td>6</td>
+                        <td>27534528</td>
+                        <td>7.369000e-40</td>
+                        <td><a href="javascript:;">some link</a></td>
+                      </tr>
+                      <tr>
+                        <td>rs532086</td>
+                        <td>6</td>
+                        <td>31881309</td>
+                        <td>1.779000e-25</td>
+                        <td><a href="javascript:;">some link</a></td>
+                      </tr>
+                      <tr>
+                        <td>rs3094011</td>
+                        <td>6</td>
+                        <td>31451836</td>
+                        <td>1.867000e-25</td>
+                        <td><a href="javascript:;">some link</a></td>
+                      </tr>
+                  </tbody>
+              </table>
             </div>
             <div class="tab-pane fade" id="tabGenesAndPathways">
               <table id="dtGenesAndPathways" class="display">

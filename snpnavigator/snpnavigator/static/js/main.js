@@ -155,6 +155,9 @@
   };
   var ideogram = new Ideogram(config);
 
+  //init SNPs datatable
+  $('#dtSNPs').DataTable();
+
   //init genes and pathways datatable
   $('#dtGenesAndPathways').DataTable();
 
