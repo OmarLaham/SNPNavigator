@@ -6,7 +6,7 @@ from django.template import loader
 from django.http import HttpResponse, JsonResponse, Http404, HttpResponseRedirect
 from django import template
 from django.views import View
-from planet.models import Run
+
 
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -21,20 +21,20 @@ import json
 import gzip
 from glob import glob, escape
 
-from natsort import natsorted #bette sorting for strings starting with numbers
+#from natsort import natsorted #bette sorting for strings starting with numbers
 
 import shutil
 
 import os
 from os import path
 
-import utils.helpers as helpers
+from . import helpers
 
 def json_snp_query(request, run_id, open_peak_cell_types, cpg_island, close_to_another_open_peak, diseases_peaks_match, diseases_peaks_mismatch):
 
     dict_run_config = helpers.get_run_config(run_id)
 
-    return JsonResponse({"run_config": dict_run_config})
+    return JsonResponse(dict_run_config)
 
 # def start(request):
 #

@@ -166,20 +166,20 @@
   $(document).ready(function() {
 
     let run_id = "run_1";
-    let open_peak_cell_types = ""
-    let cpg_island = false;
-    let close_to_another_peak = false;
-    let diseases_peaks_match = "";
-    let diseases_peaks_mismatch = "";
+    let open_peak_cell_types = "NA"
+    let cpg_island = 0;
+    let close_to_another_peak = 0;
+    let diseases_peaks_match = "NA";
+    let diseases_peaks_mismatch = "NA";
 
     $.ajax({
         type: "GET",
-        contentType: "application/json; charset=utf-8",
         url: `/json_snp_query/${run_id}/${open_peak_cell_types}/${cpg_island}/${close_to_another_peak}/${diseases_peaks_match}/${diseases_peaks_mismatch}`,
-        data: "{}",
-        dataType: "json",
+        contentType: 'application/json; charset=utf-8',
+        data: "json",
         success: function (data) {
             alert(data);
+            console.log(data);
         },
         error: function (result) {
             alert("Unable to get query results. Please try again or contact help.");

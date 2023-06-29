@@ -5,6 +5,9 @@ whitenoise==6.5.0  # https://github.com/evansd/whitenoise
 redis==4.5.5  # https://github.com/redis/redis-py
 hiredis==2.2.3  # https://github.com/redis/hiredis-py
 
+pandas==2.0.3
+numpy==1.25.0
+
 # Django
 # ------------------------------------------------------------------------------
 django==4.1.9  # pyup: < 4.2  # https://www.djangoproject.com/
