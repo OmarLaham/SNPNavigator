@@ -4,9 +4,9 @@
 
   <h4 class="text-center">Visualization gives better insights!</h4>
   <h4 class="text-center">Please fill the following form.</h4>
-  <div class="row m-3">
-    <div class="col-3"></div>
-    <div class="col-6">
+  <div class="row m-1">
+    <div class="col-2"></div>
+    <div class="col-8">
       <form>
         <div class="mb-3">
           <label for="txtTitle" class="form-label">Title</label>
@@ -38,6 +38,11 @@
                   <div id="pvalHelp" class="form-text">The name of the p-value column in your uploaded file.</div>
                 </div>
                 <div class="mb-3">
+                  <label for="snpIDColName1" class="form-label">SNP ID Column Name</label>
+                  <input type="text" class="form-control" id="snpIDColName1" aria-describedby="snpIDColName1Help">
+                  <div id="snpIDColName1Help" class="form-text">The name of the p-value column in your uploaded file.</div>
+                </div>
+                <div class="mb-3">
                   <label for="chromColName1" class="form-label">Chromosome Column Name</label>
                   <input type="text" class="form-control" id="chromColName1" aria-describedby="chromHelp">
                   <div id="chromHelp" class="form-text">The name of the chromosome column in your uploaded file.</div>
@@ -64,6 +69,16 @@
                   <div id="peaksStartColNameHelp" class="form-text">The name of the peak start pos column in your uploaded peaks file.</div>
                 </div>
                 <div class="mb-3">
+                  <label for="peaksGeneIDColName" class="form-label">Peak Gene ID Column Name</label>
+                  <input type="text" class="form-control" id="peaksGeneIDColName" aria-describedby="peaksGeneIDColNameHelp">
+                  <div id="peaksGeneIDColNameHelp" class="form-text">The name of the peak start pos column in your uploaded peaks file.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="peaksAssocGeneNameColName" class="form-label">Peak Start Column Name</label>
+                  <input type="text" class="form-control" id="peaksAssocGeneNameColName" aria-describedby="peaksAssocGeneNameColNameHelp">
+                  <div id="peaksAssocGeneNameColNameHelp" class="form-text">The name of the peak start pos column in your uploaded peaks file.</div>
+                </div>
+                <div class="mb-3">
                   <label for="peaksEndColName" class="form-label">Peak End Column Name</label>
                   <input type="text" class="form-control" id="peaksEndColName" aria-describedby="peaksEndColNameHelp">
                   <div id="peaksEndColNameHelp" class="form-text">The name of the peak start pos column in your uploaded peaks file.</div>
@@ -76,7 +91,7 @@
                 <div class="mb-3">
                   <label for="cntMatrixColNamingPattern" class="form-label">Count Matrix Column Naming Pattern</label>
                   <input type="text" class="form-control" id="cntMatrixColNamingPattern" aria-describedby="cntMatrixColNamingPatternHelp">
-                  <div id="cntMatrixColNamingPatternHelp" class="form-text">The naming patter used for count matrix. e.g. [sub_id]_[cell_type_id]</div>
+                  <div id="cntMatrixColNamingPatternHelp" class="form-text">The naming patter used for count matrix. e.g.: AVG_[cell_type_id]</div>
                 </div>
               </div>
             </div>
@@ -103,6 +118,11 @@
                   <label for="pvalColName2" class="form-label">P-val Column Name</label>
                   <input type="text" class="form-control" id="pvalColName2" aria-describedby="pvalHelp">
                   <div id="pvalHelp" class="form-text">The name of the p-value column in your uploaded file.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="snpIDColName2" class="form-label">SNP ID Column Name</label>
+                  <input type="text" class="form-control" id="snpIDColName2" aria-describedby="snpIDColName2Help">
+                  <div id="snpIDColName2Help" class="form-text">The name of the p-value column in your uploaded file.</div>
                 </div>
                 <div class="mb-3">
                   <label for="chromColName2" class="form-label">Chromosome Column Name</label>
@@ -141,6 +161,11 @@
                   <div id="pvalHelp" class="form-text">The name of the p-value column in your uploaded file.</div>
                 </div>
                 <div class="mb-3">
+                  <label for="snpIDColName3" class="form-label">SNP ID Column Name</label>
+                  <input type="text" class="form-control" id="snpIDColName3" aria-describedby="snpIDColName3Help">
+                  <div id="snpIDColName3Help" class="form-text">The name of the p-value column in your uploaded file.</div>
+                </div>
+                <div class="mb-3">
                   <label for="chromColName3" class="form-label">Chromosome Column Name</label>
                   <input type="text" class="form-control" id="chromColName3" aria-describedby="chromHelp">
                   <div id="chromHelp" class="form-text">The name of the chromosome column in your uploaded file.</div>
@@ -160,10 +185,11 @@
           <input type="checkbox" class="form-check-input" id="exampleCheck1">
           <label class="form-check-label" for="exampleCheck1">I agree on all the <a href="javascript:;">terms</a>.</label>
         </div>
-        <button type="submit" class="btn btn-primary">Submit & Visualize</button>
+        <a href="/main/run_1"><button type="button" class="btn btn-primary">Submit & Visualize</button></a>
+        <br /><br /><br />
       </form>
     </div>
-    <div class="col-3"></div>
+    <div class="col-2"></div>
   </div>
 
 {% endblock %}

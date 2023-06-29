@@ -5,6 +5,9 @@ from pathlib import Path
 
 import environ
 
+import os
+import os.path as path
+
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # snpnavigator/
 APPS_DIR = BASE_DIR / "snpnavigator"
@@ -156,6 +159,10 @@ STATICFILES_FINDERS = [
 MEDIA_ROOT = str(APPS_DIR / "media")
 # https://docs.djangoproject.com/en/dev/ref/settings/#media-url
 MEDIA_URL = "/media/"
+
+RUNS_DIR = os.path.join(MEDIA_URL, "runs")
+
+DATA_DIR = os.path.join(MEDIA_URL, "data")
 
 # TEMPLATES
 # ------------------------------------------------------------------------------
