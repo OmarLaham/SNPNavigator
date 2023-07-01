@@ -172,17 +172,26 @@
     let diseases_peaks_match = "NA";
     let diseases_peaks_mismatch = "NA";
 
-    $.ajax({
-        type: "GET",
-        url: `/json_snp_query/${run_id}/${open_peak_cell_types}/${cpg_island}/${close_to_another_peak}/${diseases_peaks_match}/${diseases_peaks_mismatch}`,
-        contentType: 'application/json; charset=utf-8',
-        data: "json",
-        success: function (data) {
-            alert(data);
-            console.log(data);
-        },
-        error: function (result) {
-            alert("Unable to get query results. Please try again or contact help.");
-        }
-    });
+    $.get(`/json_snp_query/${run_id}/${open_peak_cell_types}/${cpg_island}/${close_to_another_peak}/${diseases_peaks_match}/${diseases_peaks_mismatch}`)
+      .done(function(data, textStatus, jqXHR) {
+        console.log(data)
+        alert("success. data logged to console");
+      })
+      .fail(function(jqXHR, textStatus, errorThrown) {
+        alert("Unable to get query results. Please try again or contact help.");
+      });
+    //
+    // $.ajax({
+    //     type: "GET",
+    //     url: `/json_snp_query/${run_id}/${open_peak_cell_types}/${cpg_island}/${close_to_another_peak}/${diseases_peaks_match}/${diseases_peaks_mismatch}`,
+    //     contentType: 'application/json; charset=utf-8',
+    //     data: "json",
+    //     success: function (data) {
+    //         alert(data);
+    //         console.log(data);
+    //     },
+    //     error: function (result) {
+    //         alert("Unable to get query results. Please try again or contact help.");
+    //     }
+    // });
   });
