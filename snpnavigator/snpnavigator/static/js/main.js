@@ -211,9 +211,6 @@
 
         let snps = data["snps"];
 
-        //init SNPs datatable
-        $('#dtSNPs').removeClass("d-none");
-
         //for consecutive queries, we must destroy the table before re-init
         if(tblSNPs) {
           tblSNPs.destroy();

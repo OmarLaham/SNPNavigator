@@ -89,9 +89,14 @@
                   <div id="peaksQValHelp" class="form-text">The name of the q-value column in your uploaded peaks file.</div>
                 </div>
                 <div class="mb-3">
-                  <label for="cntMatrixColNamingPattern" class="form-label">Count Matrix Column Naming Pattern</label>
-                  <input type="text" class="form-control" id="cntMatrixColNamingPattern" aria-describedby="cntMatrixColNamingPatternHelp">
-                  <div id="cntMatrixColNamingPatternHelp" class="form-text">The naming patter used for count matrix. e.g.: AVG_[cell_type_id]</div>
+                  <label for="peaksCellTypes" class="form-label">Count Matrix Column Names</label>
+                  <input type="text" class="form-control" id="peaksCellTypes" aria-describedby="peaksCellTypesHelp">
+                  <div id="peaksCellTypesHelp" class="form-text">The cell types included in peaks. e.g.: GLUT,GABA,OLIG</div>
+                </div>
+                <div class="mb-3">
+                  <label for="cntMatrixColNames" class="form-label">Count Matrix Column Names</label>
+                  <input type="text" class="form-control" id="cntMatrixColNames" aria-describedby="cntMatrixColNamesHelp">
+                  <div id="cntMatrixColNamesHelp" class="form-text">The names of cols containing values of count matrix for different cell types comma separated. e.g.: AVG_GLUT,AVG_GABA,AVG_OLIG</div>
                 </div>
               </div>
             </div>
