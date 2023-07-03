@@ -144,6 +144,9 @@
   //init ideogram
   var d3 = Ideogram.d3;
 
+  //datatable variables
+  var tblSNPs;
+
   var config = {
     container: '#ideogramContainer',
     organism: 'human',
@@ -155,43 +158,86 @@
   };
   var ideogram = new Ideogram(config);
 
-  //init SNPs datatable
-  $('#dtSNPs').DataTable();
-
   //init genes and pathways datatable
   $('#dtGenesAndPathways').DataTable();
 
 
-  //send initial SNP query
-  $(document).ready(function() {
+  function initSNPQuery() {
+
+    //start loading spinner. Will need this only for the first query.
+    $('#queryResultsSpinner').removeClass("d-none");
 
     let run_id = "run_1";
-    let open_peak_cell_types = "NA"
-    let cpg_island = 0;
-    let close_to_another_peak = 0;
-    let diseases_peaks_match = "NA";
-    let diseases_peaks_mismatch = "NA";
+    let spec_chr = $("#lstSpecChr").val()
+    var open_peak_cell_types = Array();
+    let cpg_island = ($("#snpCpGIsland").is(':checked')) ? 1: 0;
+    let close_to_another_peak = ($("#snpCloseToAnotherPeak").is(':checked')) ? 1 : 0;
+    var diseases_peaks_match = Array();
+    var diseases_peaks_mismatch = Array();
 
-    $.get(`/json_snp_query/${run_id}/${open_peak_cell_types}/${cpg_island}/${close_to_another_peak}/${diseases_peaks_match}/${diseases_peaks_mismatch}`)
+    $('.atacCellType:checked').each(function() {
+        open_peak_cell_types.push($(this).data('atac-cell-type'));
+    });
+    if(open_peak_cell_types.length > 0) {
+      open_peak_cell_types = open_peak_cell_types.join(",")
+    } else {
+      open_peak_cell_types = "NA"
+    }
+
+    $('.diseaseMatch:checked').each(function() {
+        diseases_peaks_match.push($(this).data('disease-match'));
+    });
+    if(diseases_peaks_match.length > 0) {
+      diseases_peaks_match = diseases_peaks_match.join(",")
+    } else {
+      diseases_peaks_match = "NA"
+    }
+
+    $('.diseaseMismatch:checked').each(function() {
+        diseases_peaks_mismatch.push($(this).data('disease-mismatch'));
+    });
+    if(diseases_peaks_mismatch.length > 0) {
+      diseases_peaks_mismatch = diseases_peaks_mismatch.join(",")
+    } else {
+      diseases_peaks_mismatch = "NA"
+    }
+
+    let get_request_link = `/json_snp_query/${run_id}/${spec_chr}/${open_peak_cell_types}/${cpg_island}/${close_to_another_peak}/${diseases_peaks_match}/${diseases_peaks_mismatch}`;
+
+    $.get(get_request_link)
       .done(function(data, textStatus, jqXHR) {
-        console.log(data)
-        alert("success. data logged to console");
+
+        console.log(data); //TODO: remove this line =)
+
+        let snps = data["snps"];
+
+        //init SNPs datatable
+        $('#dtSNPs').removeClass("d-none");
+
+        //for consecutive queries, we must destroy the table before re-init
+        if(tblSNPs) {
+          tblSNPs.destroy();
+        }
+        tblSNPs = $('#dtSNPs').DataTable({data: snps});
+
+        $("#queryResultsInstructions").hide(function() {
+          $("#queryResultsWrapper").removeClass("d-none");
+          $("#queryResultsWrapper").fadeIn(function() {});
+        });
+
+
       })
       .fail(function(jqXHR, textStatus, errorThrown) {
         alert("Unable to get query results. Please try again or contact help.");
       });
-    //
-    // $.ajax({
-    //     type: "GET",
-    //     url: `/json_snp_query/${run_id}/${open_peak_cell_types}/${cpg_island}/${close_to_another_peak}/${diseases_peaks_match}/${diseases_peaks_mismatch}`,
-    //     contentType: 'application/json; charset=utf-8',
-    //     data: "json",
-    //     success: function (data) {
-    //         alert(data);
-    //         console.log(data);
-    //     },
-    //     error: function (result) {
-    //         alert("Unable to get query results. Please try again or contact help.");
-    //     }
-    // });
+
+  }
+
+  //send initial SNP query
+  $(document).ready(function() {
+
+    $('#btnFilter').click(function() {
+      initSNPQuery();
+    });
+
   });

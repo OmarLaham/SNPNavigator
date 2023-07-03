@@ -4,26 +4,55 @@
 
 {% block content %}
 
-  <div class="row">
+  <div class="row mt-3 mb-3">
 
     <!-- sidebar -->
     <div class="col col-4">
+      <h6>Specific Chromosome</h6>
+      <select id="lstSpecChr" class="form-select" aria-label="Filter for a specific chromosome">
+        <option value="NA" selected>None</option>
+        <option value="1">Chr1</option>
+        <option value="2">Chr2</option>
+        <option value="3">Chr3</option>
+        <option value="4">Chr4</option>
+        <option value="5">Chr5</option>
+        <option value="6">Chr6</option>
+        <option value="7">Chr7</option>
+        <option value="8">Chr8</option>
+        <option value="9">Chr9</option>
+        <option value="10">Chr10</option>
+        <option value="11">Chr11</option>
+        <option value="12">Chr12</option>
+        <option value="13">Chr13</option>
+        <option value="14">Chr14</option>
+        <option value="15">Chr15</option>
+        <option value="16">Chr16</option>
+        <option value="17">Chr17</option>
+        <option value="18">Chr18</option>
+        <option value="19">Chr19</option>
+        <option value="20">Chr20</option>
+        <option value="21">Chr21</option>
+        <option value="22">Chr22</option>
+        <option value="X">ChrX</option>
+        <option value="Y">ChrY</option>
+      </select>
+      <hr />
       <h6>eQTL</h6>
       eQTL options go here..
       <hr />
       <h6>Lays in peaks of:</h6>
       <ul id="lst-ataq-seq-peaks" class="list-group">
         <li class="list-group-item">
-          <input class="form-check-input me-1" type="checkbox" value="" id="atacCellType1">
+          <input class="form-check-input me-1 atacCellType" data-atac-cell-type="GABA" type="checkbox" value="" id="atacCellType1">
           <label class="form-check-label" for="atacCellType1">GABA</label>
         </li>
         <li class="list-group-item">
-          <input class="form-check-input me-1" type="checkbox" value="" id="atacCellType2">
+          <input class="form-check-input me-1 atacCellType" data-atac-cell-type="GLUT" type="checkbox" value="" id="atacCellType2">
           <label class="form-check-label" for="atacCellType2">GLUT</label>
         </li>
         <li class="list-group-item">
-          <input class="form-check-input me-1" type="checkbox" value="" id="atacCellType3">
-          <label class="form-check-label" for="atacCellType3">Glias</label>
+          <input class="form-check-input me-1 atacCellType" data-atac-cell-type="OLIG" type="checkbox" value="" id="atacCellType3">
+          <label class="form-check-label" for="atacCellType3">OLIG</label>
         </li>
       </ul>
       <hr />
@@ -43,11 +72,11 @@
       Included in the SNPs of:
       <ul id="lst-snp-disease-match" class="list-group list-group-horizontal">
         <li class="list-group-item">
-          <input class="form-check-input me-1" type="checkbox" value="" id="diseaseMatchBD">
+          <input class="form-check-input me-1 diseaseMatch" data-disease-match="bd" type="checkbox" value="" id="diseaseMatchBD">
           <label class="form-check-label" for="diseaseMatchBD">BD</label>
         </li>
         <li class="list-group-item">
-          <input class="form-check-input me-1" type="checkbox" value="" id="diseaseMatchMDD">
+          <input class="form-check-input me-1 diseaseMatch" data-disease-match="mdd" type="checkbox" value="" id="diseaseMatchMDD">
           <label class="form-check-label" for="diseaseMatchMDD">MDD</label>
         </li>
       </ul>
@@ -55,11 +84,11 @@
       Not included in the SNPs of:
       <ul id="lst-snp-disease-mismatch" class="list-group list-group-horizontal">
         <li class="list-group-item">
-          <input class="form-check-input me-1" type="checkbox" value="" id="diseaseMismatchBD">
+          <input class="form-check-input me-1 diseaseMismatch" data-disease-mismatch="bd" type="checkbox" value="" id="diseaseMismatchBD">
           <label class="form-check-label" for="diseaseMismatchBD">BD</label>
         </li>
         <li class="list-group-item">
-          <input class="form-check-input me-1" type="checkbox" value="" id="diseaseMismatchMDD">
+          <input class="form-check-input me-1 diseaseMismatch" data-disease-mismatch="mdd" type="checkbox" value="" id="diseaseMismatchMDD">
           <label class="form-check-label" for="diseaseMismatchMDD">MDD</label>
         </li>
       </ul>
@@ -70,114 +99,131 @@
 
     <!-- main -->
     <div class="col col-8">
-      <div id="ideogramContainer"></div>
-
-      <br /><br />
-
-      <div class="queryTabs">
-        <ul class="nav nav-tabs" id="">
-            <li class="nav-item">
-                <a href="#tabSNPs" class="nav-link active" data-bs-toggle="tab">SNPs</a>
-            </li>
-            <li class="nav-item">
-                <a href="#tabGenesAndPathways" class="nav-link" data-bs-toggle="tab">Genes & Pathways</a>
-            </li>
-            <li class="nav-item">
-                <a href="#tabOthers" class="nav-link" data-bs-toggle="tab">Other</a>
-            </li>
-        </ul>
-
-        <div class="tab-content">
-            <div class="tab-pane fade show active" id="tabSNPs">
-              <table id="dtSNPs" class="display">
-                  <thead>
-                      <tr>
-                        <th>ID</th>
-                        <th>Chrom</th>
-                        <th>Pos</th>
-                        <th>P-val</th>
-                        <th>Operations</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      <tr>
-                        <td>rs10484399</td>
-                        <td>6</td>
-                        <td>27534528</td>
-                        <td>7.369000e-40</td>
-                        <td><a href="javascript:;">some link</a></td>
-                      </tr>
-                      <tr>
-                        <td>rs532086</td>
-                        <td>6</td>
-                        <td>31881309</td>
-                        <td>1.779000e-25</td>
-                        <td><a href="javascript:;">some link</a></td>
-                      </tr>
-                      <tr>
-                        <td>rs3094011</td>
-                        <td>6</td>
-                        <td>31451836</td>
-                        <td>1.867000e-25</td>
-                        <td><a href="javascript:;">some link</a></td>
-                      </tr>
-                  </tbody>
-              </table>
-            </div>
-            <div class="tab-pane fade" id="tabGenesAndPathways">
-              <table id="dtGenesAndPathways" class="display">
-                  <thead>
-                      <tr>
-                          <th>Gene</th>
-                          <th>Pathway 1</th>
-                          <th>Pathway 2</th>
-                          <th>Pathway 3</th>
-                          <th>Pathway 4</th>
-                          <th>Pathway 5</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      <tr>
-                          <td>Gene I</td>
-                          <td>X</td>
-                          <td></td>
-                          <td>X</td>
-                          <td></td>
-                          <td></td>
-                      </tr>
-                      <tr>
-                          <td>Gene II</td>
-                          <td></td>
-                          <td>X</td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                      </tr>
-                      <tr>
-                          <td>Gene III</td>
-                          <td>X</td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td>X</td>
-                      </tr>
-                      <tr>
-                          <td>Gene IV</td>
-                          <td></td>
-                          <td></td>
-                          <td>X</td>
-                          <td></td>
-                          <td>X</td>
-                      </tr>
-                  </tbody>
-              </table>
-            </div>
-            <div class="tab-pane fade" id="tabOthers">
-              Others
-            </div>
+      <div id="queryResultsInstructions">
+        <div class="alert alert-primary" role="alert">
+          Please use the query selectors in the sidebar and click on the "Filter and Visualize" button!
+        </div>
+        <div id="queryResultsSpinner" class="d-flex justify-content-center d-none">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
         </div>
       </div>
+      <div id="queryResultsWrapper" class="d-none">
+        <div class="plotsTabs">
+          <ul class="nav nav-tabs" id="">
+              <li class="nav-item">
+                  <a href="#tabIdiogram" class="nav-link active" data-bs-toggle="tab">Idiogram</a>
+              </li>
+              <li class="nav-item">
+                  <a href="#tabCAManhattan" class="nav-link" data-bs-toggle="tab">caManhattan Plot</a>
+              </li>
+          </ul>
+          <div class="tab-content">
+              <!-- ideogram tab pane -->
+              <div class="tab-pane fade show active" id="tabIdiogram">
+                <div id="ideogramContainer"></div>
+              </div>
+              <!-- caMannhattan tab pane -->
+              <div class="tab-pane fade" id="tabCAManhattan">
+                <div id="caManhattanContainer">
+                  <br />
+                  <div class="alert alert-primary" role="alert">
+                    In this Manhattan plot, SNPs that don't lay in any open chromatin region (OCR) of any selected cell type will be plotted in gray.
+                  </div>
+                  <br />
+                </div>
+              </div>
+          </div>
+        </div>
 
+        <br /><br />
+
+        <div class="queryTabs">
+          <ul class="nav nav-tabs" id="">
+              <li class="nav-item">
+                  <a href="#tabSNPs" class="nav-link active" data-bs-toggle="tab">SNPs</a>
+              </li>
+              <li class="nav-item">
+                  <a href="#tabGenesAndPathways" class="nav-link" data-bs-toggle="tab">Genes & Pathways</a>
+              </li>
+              <li class="nav-item">
+                  <a href="#tabOthers" class="nav-link" data-bs-toggle="tab">Other</a>
+              </li>
+          </ul>
+
+          <div class="tab-content">
+              <div class="tab-pane fade show active" id="tabSNPs">
+                <table id="dtSNPs" class="display d-none">
+                    <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Chrom</th>
+                          <th>Pos</th>
+                          <th>P-val</th>
+                          <th>Operations</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+              </div>
+              <div class="tab-pane fade" id="tabGenesAndPathways">
+                <table id="dtGenesAndPathways" class="display">
+                    <thead>
+                        <tr>
+                            <th>Gene</th>
+                            <th>Pathway 1</th>
+                            <th>Pathway 2</th>
+                            <th>Pathway 3</th>
+                            <th>Pathway 4</th>
+                            <th>Pathway 5</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Gene I</td>
+                            <td>X</td>
+                            <td></td>
+                            <td>X</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Gene II</td>
+                            <td></td>
+                            <td>X</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Gene III</td>
+                            <td>X</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>X</td>
+                        </tr>
+                        <tr>
+                            <td>Gene IV</td>
+                            <td></td>
+                            <td></td>
+                            <td>X</td>
+                            <td></td>
+                            <td>X</td>
+                        </tr>
+                    </tbody>
+                </table>
+              </div>
+              <div class="tab-pane fade" id="tabOthers">
+                Others
+              </div>
+          </div>
+        </div>
+
+      </div>
     </div>
 
   </div>
