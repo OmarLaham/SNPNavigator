@@ -30,27 +30,62 @@ import os
 from os import path
 
 from . import helpers
+from .helpers import log, LogStatus
 
 gwas_pval_thresh = 5 * (10 ** -8)
+peak_open_thresh = 10 #TODO: replace by q-val after peak calling
 
 
-def filter_snps_in_ocrs(df_snps, df_peaks, peak_cell_types, peaks_count_matrix_column_names, open_peak_cell_types): #filter snps using OCRs (Open Chromatin Regions)
+def filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_matrix_column_names, open_peak_cell_types, close_to_another_ocr): #filter snps using OCRs (Open Chromatin Regions)
 
-    #create set to store SNPs ids
-    #for each open_peak_cell_type SNPs that lay in OCR
-    #find intersection of SNPs ids
-    #filter df_snps using IDs intersection
-    #return
+    # filter df_peaks to include only peaks that are open for selected cell types in (open_peak_cell_types). This will make iteration faster
+    log("filter_snps_in_ocrs", "filter df_peaks", LogStatus.Start)
+    df_peaks_filter_query = []
+    for col_name in peaks_count_matrix_column_names:
+        for open_peak_cell_type in open_peak_cell_types:
+            if open_peak_cell_type in col_name:
+                df_peaks_filter_query.append("{0} > {1}".format(col_name, peak_open_thresh))
+    df_peaks_filter_query = " & ".join(df_peaks_filter_query)
+    df_peaks_filtered = df_peaks.query(df_peaks_filter_query)
+    log("filter_snps_in_ocrs", "filter df_peaks", LogStatus.End)
+    log("len(filtered_peaks)", len(df_peaks_filtered))
 
-    return None
-def json_snp_query(request, run_id, spec_chr, open_peak_cell_types, cpg_island, close_to_another_open_peak, diseases_peaks_match, diseases_peaks_mismatch):
+    # open mapping_snps_to_peaks file to get IDs of SNPs that lay in the selected open peaks
+    # TODO: create auto generation process for the "mapping_snps_to_peaks" file while preparing run.
+    log("filter_snps_in_ocrs", "read mapping_snps_to_peaks_file", LogStatus.Start)
+    snp_peaks_mapping_file_path = path.join(settings.MEDIA_ROOT, "runs", run_id, "auto_generated_files", "sz_mapping_snps_to_peaks.tsv")
+    df_mapping_snps_to_peaks = pd.read_csv(snp_peaks_mapping_file_path,
+                                           sep="\t",
+                                           keep_default_na=False) #keep_default_na=False is important so empty string or "NA" strings are not converted to pd.NaN)
+
+    #keep only SNPs laying in open OCRs of selected cell types
+    df_mapping_snps_to_peaks = df_mapping_snps_to_peaks[df_mapping_snps_to_peaks["peak_name"].isin(df_peaks_filtered["name"].values.tolist())]
+
+    # filter to SNPs that lay in OCR and close to another OCR
+    if close_to_another_ocr == 1:
+        log("filter_snps_in_ocrs", "filter close to another OCR", LogStatus.Start)
+        df_mapping_snps_to_peaks = df_mapping_snps_to_peaks.query("adj_prev_peak_name != '' | adj_next_peak_name != ''")
+        log("filter_snps_in_ocrs", "filter close to another OCR", LogStatus.End)
+
+    log("filter_snps_in_ocrs", "read mapping_snps_to_peaks_file", LogStatus.End)
+
+    # filter df_snps using IDs intersection
+    log("filter_snps_in_ocrs", "filter df_snps", LogStatus.Start)
+    df_filtered_snps = df_snps[df_snps["id"].isin(df_mapping_snps_to_peaks["snp_id"].values.tolist())]
+    log("filter_snps_in_ocrs", "filter df_snps", LogStatus.End)
+
+    return df_filtered_snps
+
+def json_snp_query(request, run_id, spec_chr, open_peak_cell_types, cpg_island, close_to_another_ocr, diseases_peaks_match, diseases_peaks_mismatch):
 
     dict_run_config = helpers.get_run_config(run_id)
 
     gwas_pval_col = dict_run_config["condition_1_pval_col"]
 
+    log("query", "read GWAS", LogStatus.Start)
     df_gwas = pd.read_csv(path.join(settings.MEDIA_ROOT, "data", "gwas", dict_run_config["condition_1_name"], dict_run_config["condition_1_gwas_file"]),
                           sep="\t", skiprows=int(dict_run_config["condition_1_gwas_file_skiprows"]))
+    log("query", "read GWAS", LogStatus.End)
 
     #rename some cols of gwas df for standardization
     df_gwas = df_gwas.rename(columns={
@@ -75,7 +110,7 @@ def json_snp_query(request, run_id, spec_chr, open_peak_cell_types, cpg_island, 
 
     #integrate ATAC-seq peaks if included in queries
     df_peaks = pd.read_csv(path.join(settings.MEDIA_ROOT, "data", "peaks", dict_run_config["condition_1_name"], dict_run_config["condition_1_peaks_file"]),
-                          sep="\t")
+                          sep="\t", index_col=False)
 
     # rename some cols of peaks df for standardization
     df_peaks = df_peaks.rename(columns={
@@ -92,7 +127,7 @@ def json_snp_query(request, run_id, spec_chr, open_peak_cell_types, cpg_island, 
 
     #filter using OCRs of selected cell types if provided
     if open_peak_cell_types != "NA":
-        df_selected_snps = filter_snps_in_ocrs(df_selected_snps, df_peaks, peak_cell_types, peaks_count_matrix_column_names, open_peak_cell_types)
+        df_selected_snps = filter_snps_in_ocrs(run_id, df_selected_snps, df_peaks, peak_cell_types, peaks_count_matrix_column_names, open_peak_cell_types, close_to_another_ocr)
 
     #add "Operations" col to use in the UI
     df_selected_snps["operations"] = "<a href='javascript:;'>some link</a>"

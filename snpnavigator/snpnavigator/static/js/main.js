@@ -171,7 +171,7 @@
     let spec_chr = $("#lstSpecChr").val()
     var open_peak_cell_types = Array();
     let cpg_island = ($("#snpCpGIsland").is(':checked')) ? 1: 0;
-    let close_to_another_peak = ($("#snpCloseToAnotherPeak").is(':checked')) ? 1 : 0;
+    let close_to_another_ocr = ($("#snpCloseToAnotherOCR").is(':checked')) ? 1 : 0;
     var diseases_peaks_match = Array();
     var diseases_peaks_mismatch = Array();
 
@@ -202,7 +202,7 @@
       diseases_peaks_mismatch = "NA"
     }
 
-    let get_request_link = `/json_snp_query/${run_id}/${spec_chr}/${open_peak_cell_types}/${cpg_island}/${close_to_another_peak}/${diseases_peaks_match}/${diseases_peaks_mismatch}`;
+    let get_request_link = `/json_snp_query/${run_id}/${spec_chr}/${open_peak_cell_types}/${cpg_island}/${close_to_another_ocr}/${diseases_peaks_match}/${diseases_peaks_mismatch}`;
 
     $.get(get_request_link)
       .done(function(data, textStatus, jqXHR) {
