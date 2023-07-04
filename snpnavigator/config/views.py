@@ -82,10 +82,13 @@ def json_snp_query(request, run_id, spec_chr, open_peak_cell_types, cpg_island, 
 
     gwas_pval_col = dict_run_config["condition_1_pval_col"]
 
-    log("query", "read GWAS", LogStatus.Start)
-    df_gwas = pd.read_csv(path.join(settings.MEDIA_ROOT, "data", "gwas", dict_run_config["condition_1_name"], dict_run_config["condition_1_gwas_file"]),
-                          sep="\t", skiprows=int(dict_run_config["condition_1_gwas_file_skiprows"]))
-    log("query", "read GWAS", LogStatus.End)
+    log("query", "load GWAS", LogStatus.Start)
+    # TODO: commented till finding a solution to boost speed of loading df GWAS
+    #df_gwas = pd.read_csv(path.join(settings.MEDIA_ROOT, "data", "gwas", dict_run_config["condition_1_name"], dict_run_config["condition_1_gwas_file"]),
+    #                      sep="\t", skiprows=int(dict_run_config["condition_1_gwas_file_skiprows"]))
+    # European SZ GWAS will be loaded on server startup as temp condition1 GWAS file
+    df_gwas = settings.DF_GWAS
+    log("query", "load GWAS", LogStatus.End)
 
     #rename some cols of gwas df for standardization
     df_gwas = df_gwas.rename(columns={

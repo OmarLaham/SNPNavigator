@@ -8,6 +8,9 @@ import environ
 import os
 import os.path as path
 
+# TODO: remove after finding a solution to boost speed of df GWAS loading
+import pandas as pd
+
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # snpnavigator/
 APPS_DIR = BASE_DIR / "snpnavigator"
@@ -277,3 +280,10 @@ SOCIALACCOUNT_FORMS = {"signup": "snpnavigator.users.forms.UserSocialSignupForm"
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+
+# temp solution to boost speed of loading df GWAS
+# TODO: remove after finding a solution to boost speed of df GWAS loading
+print("> settings.base:", "loading df GWAS..")
+DF_GWAS = pd.read_csv(path.join(MEDIA_ROOT, "data", "gwas", "sz", "PGC3_SCZ_wave3.european.autosome.public.v3.vcf.tsv"),
+                      sep="\t", skiprows=73)
+print("> settings.base:", "loaded df GWAS.")
