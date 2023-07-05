@@ -157,6 +157,7 @@
     onWillShowAnnotTooltip: enhanceTooltipContent
   };
   var ideogram = new Ideogram(config);
+  var pltManhattan = null;
 
   //init genes and pathways datatable
   $('#dtGenesAndPathways').DataTable();
@@ -164,79 +165,93 @@
 
   function plotManhattan(dataManhattan) {
 
-    let labeled_snps = dataManhattan["snps"];// snps are labeled as selected and not selected by the "selected" attribute
     let peaks = dataManhattan["peaks"];
-    let xAxisCategories = dataManhattan["xAxisCategories"];
+    let xAxisCategories = dataManhattan["x_axis_categories"];
+    let snpsDetails = dataManhattan["snps_details"];
+    let series = dataManhattan["series"]; //selected and unselected SNPs series
+
+    // Highcharts.setOptions({
+    //     colors: ['rgba(5,141,199,0.5)', 'rgba(80,180,50,0.5)']
+    // });
 
 
-    // Generate test data with discrete X values and continuous Y values.
-    const getTestData = x => {
-        const off = 0.2 + 0.2 * Math.random();
-        return new Array(200).fill(1).map(() => [
-            x,
-            off + (Math.random() - 0.5) * (Math.random() - 0.5)
-        ]);
-    };
-
-    // Make all the colors semi-transparent so we can see overlapping dots
-    const colors = Highcharts.getOptions().colors.map(color =>
-        Highcharts.color(color).setOpacity(0.5).get()
-    );
-
-    Highcharts.chart('manhattanContainer', {
+    // destroy if exist
+    if(pltManhattan != null) {
+        pltManhattan.destroy();
+    }
+    pltManhattan = Highcharts.chart('manhattanContainer', {
         chart: {
-            type: 'scatter'
+            type: 'scatter',
+            zoomType: 'xy'
         },
-        colors,
-
         title: {
-            text: ''
+            text: '',
+            align: 'left'
         },
-
+        subtitle: {
+            text:
+            '',
+            align: 'left'
+        },
         xAxis: {
-            categories: xAxisCategories
+            visible: false,
+            title: {
+                text: 'DNA / Part of DNA'
+            },
+            labels: {
+                format: ''
+            },
+            startOnTick: true,
+            endOnTick: true,
+            showLastLabel: true
         },
-
         yAxis: {
             title: {
-                text: '-Log10(p-val)'
-            }
+                text: '-log10(p-val)'
+            },
+            labels: {
+                format: '{value}'
+            },
+            min: 8,//using GWAS pval thresh
         },
-
+        legend: {
+            enabled: true
+        },
         plotOptions: {
             scatter: {
-                showInLegend: false,
-                jitter: {
-                    x: 0.24,
-                    y: 0
-                },
                 marker: {
-                    radius: 2,
-                    symbol: 'circle'
+                    radius: 2.5,
+                    symbol: 'circle',
+                    states: {
+                        hover: {
+                            enabled: true,
+                            lineColor: 'rgb(100,100,100)'
+                        }
+                    }
                 },
-                tooltip: {
-                    pointFormat: 'Measurement: {point.y:.3f}'
+                states: {
+                    hover: {
+                        marker: {
+                            enabled: false
+                        }
+                    }
+                },
+                jitter: {
+                    x: 0.005
                 }
             }
         },
-
-        series: [{
-            name: 'Run 1',
-            data: getTestData(0)
-        }, {
-            name: 'Run 2',
-            data: getTestData(1)
-        }, {
-            name: 'Run 3',
-            data: getTestData(2)
-        }, {
-            name: 'Run 4',
-            data: getTestData(3)
-        }, {
-            name: 'Run 5',
-            data: getTestData(4)
-        }]
+        tooltip: {
+            formatter: function () {
+                return '<b>SNP ID</b>: ' + snpsDetails[this.x]["id"] + '<br/>' +
+                    '<b>Chr</b>: ' + snpsDetails[this.x]["chr"] + '<br/>' +
+                    '<b>Pos</b>: ' + snpsDetails[this.x]["pos"] + '<br/>' +
+                    '<b>-log10(p-val)</b>: ' + this.y;
+            }
+        },
+        series
     });
+
 
     return;
   }

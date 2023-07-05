@@ -155,17 +155,61 @@ def json_snp_query(request, run_id, spec_chr, open_peak_cell_types, cpg_island, 
         , axis=1
     )
     log("query", "adding 'selected' col to df_snps", LogStatus.End)
-    x,y  = 2, 3
+
+    # group snps into chromosomes for Manhattan plot
+    # there will be 2 series: selected and not-selected
+    log("query", "grouping snps into series for Manhatan plot", LogStatus.Start)
+
+    df_snps_manhattan = df_snps.copy()
+
+    # sort by chr then by pos
+    log("query", "sorting df for Manhattan plot", LogStatus.Start)
+    df_snps_manhattan = df_snps_manhattan.sort_values(["chr", "pos"], ascending=True)
+    log("query", "sorting df for Manhattan plot", LogStatus.End)
+    df_snps_manhattan = df_snps_manhattan.reset_index() # reset index to use the original index as x axis value
+    del df_snps_manhattan["index"]
+    df_snps_manhattan = df_snps_manhattan.reset_index()
+    df_snps_manhattan.rename({"index": "x", "-log10(pval)": "y"}, inplace=True)
+
+    # remove unnecessary cols
+    if "operations" in df_snps_manhattan:
+        del df_snps_manhattan["operations"]
+    if "id" in df_snps_manhattan:
+        del df_snps_manhattan["id"]
+
+    # reorder cols so firs two cols are x and y for Highcharts
+    df_snps_manhattan = df_snps_manhattan[["index", "-log10(pval)", "pval", "chr", "pos", "selected"]]
+
+    # split into 2 manhattan series and keep only x and y cols. Now: Highcharts accepts only numbers and takes only the first 2 values (performance)
+    manhattan_series_selected = df_snps_manhattan[df_snps_manhattan["selected"] == True][["index", "-log10(pval)"]]
+    manhattan_series_unselected = df_snps_manhattan[df_snps_manhattan["selected"] == False][["index", "-log10(pval)"]]
+
+    log("query", "grouping snps into series for Manhatan plot", LogStatus.End)
+
     return JsonResponse({
         "selected_snps": df_selected_snps.values.tolist(),
         "manhattan": {
-            "snps": df_snps.values.tolist(),
             "peaks": [],
-            "x-axis-categories": [],
+            "x_axis_categories": [],
+            "snps_details": df_snps_manhattan.to_dict('index'),# convert df into dict to query SNPs details while using Manhattan,
             "series": [
                 {
-                    "name": 'Run 1',
-                    "data": [x,y]
+                    "name": 'Selected SNPs',
+                    "id": "Selected SNPs",
+                    "marker": {
+                        "symbol": 'circle' #can be e.g. triangle or square
+                    },
+                    "color": "blue",
+                    "data": manhattan_series_selected.values.tolist()
+                },
+                {
+                    "name": 'Un-Selected SNPs',
+                    "id": "Un-Selected SNPs",
+                    "marker": {
+                        "symbol": 'circle'  # can be e.g. triangle or square
+                    },
+                    "color": "lightgray",
+                    "data": manhattan_series_unselected.values.tolist()
                 }
             ]
         }
