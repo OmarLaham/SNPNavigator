@@ -90,7 +90,7 @@ def json_snp_query(request, run_id, spec_chr, open_peak_cell_types, cpg_island, 
     df_gwas = settings.DF_GWAS
     log("query", "load GWAS", LogStatus.End)
 
-    #rename some cols of gwas df for standardization
+    # rename some cols of gwas df for standardization
     df_gwas = df_gwas.rename(columns={
         dict_run_config["condition_1_pval_col"]: "pval",
         dict_run_config["condition_1_snp_id_col"]: "id",
@@ -98,20 +98,29 @@ def json_snp_query(request, run_id, spec_chr, open_peak_cell_types, cpg_island, 
         dict_run_config["conditoin_1_pos_col"]: "pos",
     })
 
-    #filter for specific chr if passed
+    # filter for specific chr if passed
     if spec_chr != "NA":
         df_gwas = df_gwas.query("chr == {0}".format(spec_chr))
 
-    #filter using GWAS pval thresh
+    # filter using GWAS pval thresh
     df_gwas = df_gwas.query("pval <= {0}".format(gwas_pval_thresh))
 
-    #filter to only IDs that start with "rs". Some IDs in the database are not standard (e.g. 10:104427825_C_T).
+    # filter to only IDs that start with "rs". Some IDs in the database are not standard (e.g. 10:104427825_C_T).
     df_gwas = df_gwas[df_gwas["id"].str.startswith('rs', na=False)]
 
     #filter SNPs using selected criteria in the UI
-    df_selected_snps = df_gwas[["id", "chr", "pos", "pval"]]
+    df_snps = df_gwas[["id", "chr", "pos", "pval"]]
 
-    #integrate ATAC-seq peaks if included in queries
+    #calc -log10(pval)
+    log("query", "calc snps -log10(pval)", LogStatus.Start)
+    df_snps["-log10(pval)"] = ""
+    df_snps["-log10(pval)"] = df_snps.apply(
+        lambda row: -1 * math.log10(row["pval"])
+        , axis=1
+    )
+    log("query", "calc snps -log10(pval)", LogStatus.End)
+
+    # integrate ATAC-seq peaks if included in queries
     df_peaks = pd.read_csv(path.join(settings.MEDIA_ROOT, "data", "peaks", dict_run_config["condition_1_name"], dict_run_config["condition_1_peaks_file"]),
                           sep="\t", index_col=False)
 
@@ -124,18 +133,43 @@ def json_snp_query(request, run_id, spec_chr, open_peak_cell_types, cpg_island, 
         dict_run_config["condition_1_peaks_associated_gene_name_col"]: "assoc_gene_name"
     })
 
-    #get peaks cell types and count matrix column names from config
+    # get peaks cell types and count matrix column names from config
     peak_cell_types = dict_run_config["condition_1_peaks_cell_types"].split(",")# e.g. "GLUT,GABA,OLIG"
     peaks_count_matrix_column_names = dict_run_config["condition_1_count_matrix_column_names"].split(",")# e.g. "AVG_GLUT,AVG_GABA,AVG_OLIG"
 
-    #filter using OCRs of selected cell types if provided
+    # filter using OCRs of selected cell types if provided
     if open_peak_cell_types != "NA":
-        df_selected_snps = filter_snps_in_ocrs(run_id, df_selected_snps, df_peaks, peak_cell_types, peaks_count_matrix_column_names, open_peak_cell_types, close_to_another_ocr)
+        df_selected_snps = filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_matrix_column_names, open_peak_cell_types, close_to_another_ocr)
+    else:
+        df_selected_snps = df_snps
 
-    #add "Operations" col to use in the UI
+    # add "Operations" col to use in the UI
     df_selected_snps["operations"] = "<a href='javascript:;'>some link</a>"
 
-    return JsonResponse({"snps": df_selected_snps.values.tolist()})
+    # add "selected" col to df_snps, the df containing all gwas sig. snps
+    log("query", "adding 'selected' col to df_snps", LogStatus.Start)
+    selected_snps_ids = set(df_selected_snps.id.values.tolist())
+    df_snps["selected"] = ""
+    df_snps["selected"] = df_snps.apply(
+        lambda row: True if row["id"] in selected_snps_ids else False
+        , axis=1
+    )
+    log("query", "adding 'selected' col to df_snps", LogStatus.End)
+    x,y  = 2, 3
+    return JsonResponse({
+        "selected_snps": df_selected_snps.values.tolist(),
+        "manhattan": {
+            "snps": df_snps.values.tolist(),
+            "peaks": [],
+            "x-axis-categories": [],
+            "series": [
+                {
+                    "name": 'Run 1',
+                    "data": [x,y]
+                }
+            ]
+        }
+    })
 
 # def start(request):
 #

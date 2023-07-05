@@ -162,6 +162,85 @@
   $('#dtGenesAndPathways').DataTable();
 
 
+  function plotManhattan(dataManhattan) {
+
+    let labeled_snps = dataManhattan["snps"];// snps are labeled as selected and not selected by the "selected" attribute
+    let peaks = dataManhattan["peaks"];
+    let xAxisCategories = dataManhattan["xAxisCategories"];
+
+
+    // Generate test data with discrete X values and continuous Y values.
+    const getTestData = x => {
+        const off = 0.2 + 0.2 * Math.random();
+        return new Array(200).fill(1).map(() => [
+            x,
+            off + (Math.random() - 0.5) * (Math.random() - 0.5)
+        ]);
+    };
+
+    // Make all the colors semi-transparent so we can see overlapping dots
+    const colors = Highcharts.getOptions().colors.map(color =>
+        Highcharts.color(color).setOpacity(0.5).get()
+    );
+
+    Highcharts.chart('manhattanContainer', {
+        chart: {
+            type: 'scatter'
+        },
+        colors,
+
+        title: {
+            text: ''
+        },
+
+        xAxis: {
+            categories: xAxisCategories
+        },
+
+        yAxis: {
+            title: {
+                text: '-Log10(p-val)'
+            }
+        },
+
+        plotOptions: {
+            scatter: {
+                showInLegend: false,
+                jitter: {
+                    x: 0.24,
+                    y: 0
+                },
+                marker: {
+                    radius: 2,
+                    symbol: 'circle'
+                },
+                tooltip: {
+                    pointFormat: 'Measurement: {point.y:.3f}'
+                }
+            }
+        },
+
+        series: [{
+            name: 'Run 1',
+            data: getTestData(0)
+        }, {
+            name: 'Run 2',
+            data: getTestData(1)
+        }, {
+            name: 'Run 3',
+            data: getTestData(2)
+        }, {
+            name: 'Run 4',
+            data: getTestData(3)
+        }, {
+            name: 'Run 5',
+            data: getTestData(4)
+        }]
+    });
+
+    return;
+  }
+
   function initSNPQuery() {
 
     //start loading spinner. Will need this only for the first query.
@@ -209,13 +288,18 @@
 
         console.log(data); //TODO: remove this line =)
 
-        let snps = data["snps"];
+        let selected_snps = data["selected_snps"];
 
         //for consecutive queries, we must destroy the table before re-init
         if(tblSNPs) {
           tblSNPs.destroy();
         }
-        tblSNPs = $('#dtSNPs').DataTable({data: snps});
+        tblSNPs = $('#dtSNPs').DataTable({data: selected_snps});
+
+        //plot Manhattan
+        let dataManhattan = data["manhattan"];
+        plotManhattan(dataManhattan);
+
 
         $("#queryResultsInstructions").hide(function() {
           $("#queryResultsWrapper").removeClass("d-none");

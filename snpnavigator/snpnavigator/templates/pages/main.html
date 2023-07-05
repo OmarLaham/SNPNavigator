@@ -116,7 +116,7 @@
                   <a href="#tabIdiogram" class="nav-link active" data-bs-toggle="tab">Idiogram</a>
               </li>
               <li class="nav-item">
-                  <a href="#tabCAManhattan" class="nav-link" data-bs-toggle="tab">caManhattan Plot</a>
+                  <a href="#tabManhattan" class="nav-link" data-bs-toggle="tab">Manhattan Plot</a>
               </li>
           </ul>
           <div class="tab-content">
@@ -124,14 +124,17 @@
               <div class="tab-pane fade show active" id="tabIdiogram">
                 <div id="ideogramContainer"></div>
               </div>
-              <!-- caMannhattan tab pane -->
-              <div class="tab-pane fade" id="tabCAManhattan">
-                <div id="caManhattanContainer">
+              <!-- mannhattan tab pane -->
+              <div class="tab-pane fade" id="tabManhattan">
+                <div id="manhattanWrapper">
                   <br />
                   <div class="alert alert-primary" role="alert">
                     In this Manhattan plot, SNPs that don't lay in any open chromatin region (OCR) of any selected cell type will be plotted in gray.
                   </div>
                   <br />
+                  <figure class="highcharts-figure">
+                    <div id="manhattanContainer"></div>
+                  </figure>
                 </div>
               </div>
           </div>
