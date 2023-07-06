@@ -8,6 +8,12 @@ hiredis==2.2.3  # https://github.com/redis/hiredis-py
 pandas==2.0.3
 numpy==1.25.0
 
+# ----------------------------------------
+# We will need these to query UCSC Browser online
+requests==2.31.0
+xmltodict==0.13.0
+# ----------------------------------------
+
 # Django
 # ------------------------------------------------------------------------------
 django==4.1.9  # pyup: < 4.2  # https://www.djangoproject.com/

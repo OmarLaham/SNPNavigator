@@ -33,6 +33,11 @@
                   <div id="gwasHelp" class="form-text">Only .csv and .tsv formats are supported.</div>
                 </div>
                 <div class="mb-3">
+                  <label for="gwasGenomeVersion" class="form-label">GWAS Genome Version</label>
+                  <input type="text" class="form-control" id="gwasGenomeVersion" aria-describedby="gwasGenomeVersionHelp">
+                  <div id="gwasGenomeVersionHelp" class="form-text">e.g. hg19.</div>
+                </div>
+                <div class="mb-3">
                   <label for="pvalColName1" class="form-label">P-val Column Name</label>
                   <input type="text" class="form-control" id="pvalColName1" aria-describedby="pvalHelp">
                   <div id="pvalHelp" class="form-text">The name of the p-value column in your uploaded file.</div>
@@ -52,6 +57,16 @@
                   <input type="text" class="form-control" id="posColName1">
                   <div id="pvalHelp" class="form-text">The name of the pos column in your uploaded file.</div>
                 </div>
+                <div class="mb-3">
+                  <label for="originAlleleColName" class="form-label">Origin Allele Column Name</label>
+                  <input type="text" class="form-control" id="originAlleleColName">
+                  <div id="originAlleleColNameHelp" class="form-text">The name of the origin allele column in your uploaded file.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="mutationAlleleColName" class="form-label">Mutation Allele Column Name</label>
+                  <input type="text" class="form-control" id="mutationAlleleColName">
+                  <div id="mutationAlleleColNameHelp" class="form-text">The name of the mutation allele column in your uploaded file.</div>
+                </div>
                 <hr/>
                 <div class="mb-3">
                   <label for="peaksFile" class="form-label">ATAC-seq Peaks File</label>
@@ -69,19 +84,9 @@
                   <div id="peaksStartColNameHelp" class="form-text">The name of the peak start pos column in your uploaded peaks file.</div>
                 </div>
                 <div class="mb-3">
-                  <label for="peaksGeneIDColName" class="form-label">Peak Gene ID Column Name</label>
-                  <input type="text" class="form-control" id="peaksGeneIDColName" aria-describedby="peaksGeneIDColNameHelp">
-                  <div id="peaksGeneIDColNameHelp" class="form-text">The name of the peak start pos column in your uploaded peaks file.</div>
-                </div>
-                <div class="mb-3">
-                  <label for="peaksAssocGeneNameColName" class="form-label">Peak Start Column Name</label>
-                  <input type="text" class="form-control" id="peaksAssocGeneNameColName" aria-describedby="peaksAssocGeneNameColNameHelp">
-                  <div id="peaksAssocGeneNameColNameHelp" class="form-text">The name of the peak start pos column in your uploaded peaks file.</div>
-                </div>
-                <div class="mb-3">
                   <label for="peaksEndColName" class="form-label">Peak End Column Name</label>
                   <input type="text" class="form-control" id="peaksEndColName" aria-describedby="peaksEndColNameHelp">
-                  <div id="peaksEndColNameHelp" class="form-text">The name of the peak start pos column in your uploaded peaks file.</div>
+                  <div id="peaksEndColNameHelp" class="form-text">The name of the peak end column in your uploaded peaks file.</div>
                 </div>
                 <div class="mb-3">
                   <label for="peaksQValColName" class="form-label">Q-value Column Name</label>
@@ -89,7 +94,17 @@
                   <div id="peaksQValHelp" class="form-text">The name of the q-value column in your uploaded peaks file.</div>
                 </div>
                 <div class="mb-3">
-                  <label for="peaksCellTypes" class="form-label">Count Matrix Column Names</label>
+                  <label for="peaksGeneIDColName" class="form-label">Peak Gene ID Column Name</label>
+                  <input type="text" class="form-control" id="peaksGeneIDColName" aria-describedby="peaksGeneIDColNameHelp">
+                  <div id="peaksGeneIDColNameHelp" class="form-text">The name of the assoc. gene ID column in your uploaded peaks file.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="peaksAssocGeneNameColName" class="form-label">Peak Start Column Name</label>
+                  <input type="text" class="form-control" id="peaksAssocGeneNameColName" aria-describedby="peaksAssocGeneNameColNameHelp">
+                  <div id="peaksAssocGeneNameColNameHelp" class="form-text">The name of the assoc. gene name column in your uploaded peaks file.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="peaksCellTypes" class="form-label">Peaks Cell Types</label>
                   <input type="text" class="form-control" id="peaksCellTypes" aria-describedby="peaksCellTypesHelp">
                   <div id="peaksCellTypesHelp" class="form-text">The cell types included in peaks. e.g.: GLUT,GABA,OLIG</div>
                 </div>

@@ -14,6 +14,11 @@ from django.views.decorators.csrf import csrf_exempt
 
 import pandas as pd
 import numpy as np
+
+
+import requests
+import xmltodict
+
 import math
 import random
 
@@ -76,10 +81,51 @@ def filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_
 
     return df_filtered_snps
 
+def filter_snps_for_cpg_islands(run_id, df_selected_snps, gwas_genome_version):
+
+    # Algorithm:
+    # step 1- check for mutation that introduces C (=> COULD introduce CpG if G follows) or removes C (=> Could introduce CpG if G follows)
+    # step 2- for each selected mutation, query sequence online to check if G follows
+    # step 3- return results
+
+    # step 1
+    df_selected_snps = df_selected_snps.query("origin_allele == 'C' | mutation_allele=='C'")
+    if len(df_selected_snps) == 0:
+        return df_selected_snps # We've got 0 matches ;)
+
+    # step 2
+    snps_cpg_islands = {}
+    for index, row in df_selected_snps.iterrows():
+        id = row["id"]
+        chrom = row["chr"]
+        pos = row["pos"]
+        origin_allele = row["origin_allele"]
+        mutation_allele = row["mutation_allele"]
+
+        # query the UCSC Genome and get xml to check the next nucleotide
+        fetch_seq_url = "http://genome.ucsc.edu/cgi-bin/das/{0}/dna?segment={1}:{2},{3}".format(gwas_genome_version, chrom, pos+1, pos+1)
+        response = requests.get(fetch_seq_url)
+        seq_data = xmltodict.parse(response.content)
+        next_nucleotide = print(seq_data["DASDNA"]["SEQUENCE"]["DNA"]["#text"])
+
+        if next_nucleotide.upper() == 'G':
+            # decide if introducing or removing a CpG
+            if mutation_allele == 'C':
+                snps_cpg_islands[id] = "introducing_CpG"
+            elif origin_allele == 'C':
+                snps_cpg_islands[id] = "removing_CpG"
+
+    cpg_islands_snps_ids = set(snps_cpg_islands.keys())
+    df_selected_snps = df_selected_snps[df_selected_snps["id"].isin(cpg_islands_snps_ids)]
+
+    # step 3
+    return (df_selected_snps, snps_cpg_islands)
+
 def json_snp_query(request, run_id, spec_chr, open_peak_cell_types, cpg_island, close_to_another_ocr, diseases_peaks_match, diseases_peaks_mismatch):
 
     dict_run_config = helpers.get_run_config(run_id)
 
+    gwas_genome_version = dict_run_config["gwas_genome_version"]
     gwas_pval_col = dict_run_config["condition_1_pval_col"]
 
     log("query", "load GWAS", LogStatus.Start)
@@ -95,7 +141,9 @@ def json_snp_query(request, run_id, spec_chr, open_peak_cell_types, cpg_island, 
         dict_run_config["condition_1_pval_col"]: "pval",
         dict_run_config["condition_1_snp_id_col"]: "id",
         dict_run_config["condition_1_chrom_col"]: "chr",
-        dict_run_config["conditoin_1_pos_col"]: "pos",
+        dict_run_config["condition_1_pos_col"]: "pos",
+        dict_run_config["condition_1_allele_origin_col"]: "origin_allele",
+        dict_run_config["condition_1_allele_mutation_col"]: "mutation_allele"
     })
 
     # filter for specific chr if passed
@@ -109,7 +157,7 @@ def json_snp_query(request, run_id, spec_chr, open_peak_cell_types, cpg_island, 
     df_gwas = df_gwas[df_gwas["id"].str.startswith('rs', na=False)]
 
     #filter SNPs using selected criteria in the UI
-    df_snps = df_gwas[["id", "chr", "pos", "pval"]]
+    df_snps = df_gwas[["id", "chr", "pos", "pval", "origin_allele", "mutation_allele"]]
 
     #calc -log10(pval)
     log("query", "calc snps -log10(pval)", LogStatus.Start)
@@ -138,13 +186,18 @@ def json_snp_query(request, run_id, spec_chr, open_peak_cell_types, cpg_island, 
     peaks_count_matrix_column_names = dict_run_config["condition_1_count_matrix_column_names"].split(",")# e.g. "AVG_GLUT,AVG_GABA,AVG_OLIG"
 
     # filter using OCRs of selected cell types if provided
+    df_selected_snps = df_snps.copy()
+    snps_cpg_islands = None
     if open_peak_cell_types != "NA":
+        log("query", "filter_snps_in_ocrs", LogStatus.Start)
         df_selected_snps = filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_matrix_column_names, open_peak_cell_types, close_to_another_ocr)
-    else:
-        df_selected_snps = df_snps
+        log("query", "filter_snps_in_ocrs", LogStatus.End)
 
-    # add "Operations" col to use in the UI
-    df_selected_snps["operations"] = "<a href='javascript:;'>some link</a>"
+        if cpg_island != 0:
+            log("query", "filter_snps_for_cpg_islands", LogStatus.Start)
+            df_selected_snps, snps_cpg_islands = filter_snps_for_cpg_islands(run_id, df_selected_snps, gwas_genome_version)
+            log("query", "filter_snps_for_cpg_islands", LogStatus.End)
+
 
     # add "selected" col to df_snps, the df containing all gwas sig. snps
     log("query", "adding 'selected' col to df_snps", LogStatus.Start)
@@ -160,58 +213,68 @@ def json_snp_query(request, run_id, spec_chr, open_peak_cell_types, cpg_island, 
     # there will be 2 series: selected and not-selected
     log("query", "grouping snps into series for Manhatan plot", LogStatus.Start)
 
-    df_snps_manhattan = df_snps.copy()
-
     # sort by chr then by pos
-    log("query", "sorting df for Manhattan plot", LogStatus.Start)
-    df_snps_manhattan = df_snps_manhattan.sort_values(["chr", "pos"], ascending=True)
-    log("query", "sorting df for Manhattan plot", LogStatus.End)
-    df_snps_manhattan = df_snps_manhattan.reset_index() # reset index to use the original index as x axis value
+    log("query", "sorting df snps by chr then pos", LogStatus.Start)
+    df_snps = df_snps.sort_values(["chr", "pos"], ascending=True)
+    df_snps = df_snps.reset_index()
+    log("query", "sorting df snps by chr then pos", LogStatus.End)
+
+    # create Manhattan plot data
+    df_snps_manhattan = df_snps.copy()
     del df_snps_manhattan["index"]
-    df_snps_manhattan = df_snps_manhattan.reset_index()
+    df_snps_manhattan = df_snps_manhattan.reset_index() # reset index to use the original index as x axis value
     df_snps_manhattan.rename({"index": "x", "-log10(pval)": "y"}, inplace=True)
 
-    # remove unnecessary cols
-    if "operations" in df_snps_manhattan:
-        del df_snps_manhattan["operations"]
-    if "id" in df_snps_manhattan:
-        del df_snps_manhattan["id"]
-
     # reorder cols so firs two cols are x and y for Highcharts
-    df_snps_manhattan = df_snps_manhattan[["index", "-log10(pval)", "pval", "chr", "pos", "selected"]]
+    df_snps_manhattan = df_snps_manhattan[["index", "-log10(pval)", "id", "pval", "chr", "pos", "selected"]]
 
     # split into 2 manhattan series and keep only x and y cols. Now: Highcharts accepts only numbers and takes only the first 2 values (performance)
-    manhattan_series_selected = df_snps_manhattan[df_snps_manhattan["selected"] == True][["index", "-log10(pval)"]]
     manhattan_series_unselected = df_snps_manhattan[df_snps_manhattan["selected"] == False][["index", "-log10(pval)"]]
+    manhattan_series_selected = df_snps_manhattan[df_snps_manhattan["selected"] == True] # col selection for selected SNPs will be done later after splitting by chr
 
+    # create manhattan_series object for Highcharts and init it with unselected snps
+    manhattan_series = [
+        {
+            "name": 'Unselected SNPs',
+            "id": "Unselected SNPs",
+            "marker": {
+                "symbol": 'circle'  # can be e.g. triangle or square
+            },
+            "color": "lightgray",
+            "data": manhattan_series_unselected.values.tolist()
+        }
+    ]
+
+    # split selected into multiple series so they can get different colors
+    manhattan_selected_colors = ["green","blue","yellow","red"]
+    manhattan_selected_chroms = manhattan_series_selected["chr"].unique()
+    for i in range(len(manhattan_selected_chroms)) :
+        chrom = manhattan_selected_chroms[i]
+        manhattan_series_selected_chr = manhattan_series_selected.query("chr=={0}".format(chrom))
+        manhattan_series.append(
+            {
+                "name": 'Selected SNPs - Chr{0}'.format(chrom),
+                "id": 'Selected SNPs - Chr{0}'.format(chrom),
+                "marker": {
+                    "symbol": 'circle'  # can be e.g. triangle or square
+                },
+                "color": manhattan_selected_colors[i % len(manhattan_selected_colors)],
+                "data": manhattan_series_selected_chr[["index", "-log10(pval)"]].values.tolist()
+            }
+        )
     log("query", "grouping snps into series for Manhatan plot", LogStatus.End)
 
+    # add "Operations" col to use in the UI
+    df_selected_snps["operations"] = "<a href='javascript:;'>some link</a>"
+
+    print(df_snps_manhattan)
     return JsonResponse({
         "selected_snps": df_selected_snps.values.tolist(),
+        "snps_cpg_islands": snps_cpg_islands if snps_cpg_islands else [],
         "manhattan": {
             "peaks": [],
-            "x_axis_categories": [],
             "snps_details": df_snps_manhattan.to_dict('index'),# convert df into dict to query SNPs details while using Manhattan,
-            "series": [
-                {
-                    "name": 'Selected SNPs',
-                    "id": "Selected SNPs",
-                    "marker": {
-                        "symbol": 'circle' #can be e.g. triangle or square
-                    },
-                    "color": "blue",
-                    "data": manhattan_series_selected.values.tolist()
-                },
-                {
-                    "name": 'Un-Selected SNPs',
-                    "id": "Un-Selected SNPs",
-                    "marker": {
-                        "symbol": 'circle'  # can be e.g. triangle or square
-                    },
-                    "color": "lightgray",
-                    "data": manhattan_series_unselected.values.tolist()
-                }
-            ]
+            "series": manhattan_series
         }
     })
 

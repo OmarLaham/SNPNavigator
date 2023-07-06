@@ -166,7 +166,6 @@
   function plotManhattan(dataManhattan) {
 
     let peaks = dataManhattan["peaks"];
-    let xAxisCategories = dataManhattan["x_axis_categories"];
     let snpsDetails = dataManhattan["snps_details"];
     let series = dataManhattan["series"]; //selected and unselected SNPs series
 
