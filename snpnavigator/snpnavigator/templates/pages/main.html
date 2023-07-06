@@ -37,6 +37,13 @@
         <option value="Y">ChrY</option>
       </select>
       <hr />
+      <h6>Genomic Region</h6>
+      <select id="lstGenomicRegion" class="form-select" aria-label="Filter for a specific genomic region">
+        <option value="NA" selected>All</option>
+        <option value="coding">Coding</option>
+        <option value="non-coding">Non-coding</option>
+      </select>
+      <hr />
       <h6>eQTL</h6>
       eQTL options go here..
       <hr />
@@ -69,29 +76,34 @@
       </ul>
       <hr />
       <h6>Other Disease</h6>
-      Included in the SNPs of:
-      <ul id="lst-snp-disease-match" class="list-group list-group-horizontal">
-        <li class="list-group-item">
-          <input class="form-check-input me-1 diseaseMatch" data-disease-match="bd" type="checkbox" value="" id="diseaseMatchBD">
-          <label class="form-check-label" for="diseaseMatchBD">BD</label>
-        </li>
-        <li class="list-group-item">
-          <input class="form-check-input me-1 diseaseMatch" data-disease-match="mdd" type="checkbox" value="" id="diseaseMatchMDD">
-          <label class="form-check-label" for="diseaseMatchMDD">MDD</label>
-        </li>
-      </ul>
-      <br />
-      Not included in the SNPs of:
-      <ul id="lst-snp-disease-mismatch" class="list-group list-group-horizontal">
-        <li class="list-group-item">
-          <input class="form-check-input me-1 diseaseMismatch" data-disease-mismatch="bd" type="checkbox" value="" id="diseaseMismatchBD">
-          <label class="form-check-label" for="diseaseMismatchBD">BD</label>
-        </li>
-        <li class="list-group-item">
-          <input class="form-check-input me-1 diseaseMismatch" data-disease-mismatch="mdd" type="checkbox" value="" id="diseaseMismatchMDD">
-          <label class="form-check-label" for="diseaseMismatchMDD">MDD</label>
-        </li>
-      </ul>
+      <div class="row">
+        <div class="col col-6">
+          Included in the SNPs of:
+          <ul id="lst-snp-disease-match" class="list-group list-group-horizontal">
+            <li class="list-group-item">
+              <input class="form-check-input me-1 diseaseMatch" data-disease-match="bd" type="checkbox" value="" id="diseaseMatchBD">
+              <label class="form-check-label" for="diseaseMatchBD">BD</label>
+            </li>
+            <li class="list-group-item">
+              <input class="form-check-input me-1 diseaseMatch" data-disease-match="mdd" type="checkbox" value="" id="diseaseMatchMDD">
+              <label class="form-check-label" for="diseaseMatchMDD">MDD</label>
+            </li>
+          </ul>
+        </div>
+        <div class="col col-6">
+          Not included in the SNPs of:
+          <ul id="lst-snp-disease-mismatch" class="list-group list-group-horizontal">
+            <li class="list-group-item">
+              <input class="form-check-input me-1 diseaseMismatch" data-disease-mismatch="bd" type="checkbox" value="" id="diseaseMismatchBD">
+              <label class="form-check-label" for="diseaseMismatchBD">BD</label>
+            </li>
+            <li class="list-group-item">
+              <input class="form-check-input me-1 diseaseMismatch" data-disease-mismatch="mdd" type="checkbox" value="" id="diseaseMismatchMDD">
+              <label class="form-check-label" for="diseaseMismatchMDD">MDD</label>
+            </li>
+          </ul>
+        </div>
+      </div>
 
       <br />
       <button id="btnFilter" type="button" class="btn btn-primary">Filter & Visualize</button>
