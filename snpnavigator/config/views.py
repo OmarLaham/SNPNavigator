@@ -106,7 +106,7 @@ def filter_snps_for_cpg_islands(run_id, df_selected_snps, gwas_genome_version):
         fetch_seq_url = "http://genome.ucsc.edu/cgi-bin/das/{0}/dna?segment={1}:{2},{3}".format(gwas_genome_version, chrom, pos+1, pos+1)
         response = requests.get(fetch_seq_url)
         seq_data = xmltodict.parse(response.content)
-        next_nucleotide = print(seq_data["DASDNA"]["SEQUENCE"]["DNA"]["#text"])
+        next_nucleotide = seq_data["DASDNA"]["SEQUENCE"]["DNA"]["#text"]
 
         if next_nucleotide.upper() == 'G':
             # decide if introducing or removing a CpG
@@ -267,7 +267,6 @@ def json_snp_query(request, run_id, spec_chr, open_peak_cell_types, cpg_island, 
     # add "Operations" col to use in the UI
     df_selected_snps["operations"] = "<a href='javascript:;'>some link</a>"
 
-    print(df_snps_manhattan)
     return JsonResponse({
         "selected_snps": df_selected_snps.values.tolist(),
         "snps_cpg_islands": snps_cpg_islands if snps_cpg_islands else [],
