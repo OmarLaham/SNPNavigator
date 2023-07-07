@@ -149,7 +149,26 @@ def filter_snps_for_cpg_islands(run_id, df_selected_snps, gwas_genome_version):
     # step 3
     return (df_selected_snps, snps_cpg_islands)
 
-def json_snp_query(request, run_id, spec_chr, open_peak_cell_types, cpg_island, close_to_another_ocr, diseases_peaks_match, diseases_peaks_mismatch):
+def filter_snps_for_genomic_regions(run_id, df_selected_snps, gwas_genome_version, spec_gen_region):
+
+    # load genes coords for selected genome version
+    # TODO: create auto generation processes for the mapping file
+    log("filter_snps_for_genomic_regions", "load snps to locus group mapping", LogStatus.Start)
+    df_map_snp_locus_group = pd.read_csv(path.join(settings.MEDIA_ROOT, "runs", run_id, "auto_generated_files", "sz_mapping_snps_to_locus_group.tsv"), sep="\t")
+
+    if spec_gen_region == "non-coding":
+        df_map_snp_locus_group = df_map_snp_locus_group.query("locus_group!='protein-coding gene'")
+    elif spec_gen_region == "protein-coding":
+        df_map_snp_locus_group = df_map_snp_locus_group.query("locus_group=='protein-coding gene'")
+
+    log("filter_snps_for_genomic_regions", "load snps to locus group mapping", LogStatus.End)
+
+    selected_snps_ids = set(df_map_snp_locus_group.snp_id.values.tolist())
+
+    df_selected_snps = df_selected_snps[df_selected_snps["id"].isin(selected_snps_ids)]
+    return df_selected_snps
+
+def json_snp_query(request, run_id, spec_chr, spec_gen_region, open_peak_cell_types, cpg_island, close_to_another_ocr, diseases_peaks_match, diseases_peaks_mismatch):
 
     dict_run_config = helpers.get_run_config(run_id)
 
@@ -174,12 +193,16 @@ def json_snp_query(request, run_id, spec_chr, open_peak_cell_types, cpg_island, 
         dict_run_config["condition_1_allele_mutation_col"]: "mutation_allele"
     })
 
+    # filter using GWAS pval thresh
+    df_gwas = df_gwas.query("pval <= {0}".format(gwas_pval_thresh))
+
     # filter for specific chr if passed
     if spec_chr != "NA":
         df_gwas = df_gwas.query("chr == {0}".format(spec_chr))
 
-    # filter using GWAS pval thresh
-    df_gwas = df_gwas.query("pval <= {0}".format(gwas_pval_thresh))
+    # filter for genomic region if passed
+    if spec_gen_region != "NA":
+        df_gwas = filter_snps_for_genomic_regions(run_id, df_gwas, gwas_genome_version, spec_gen_region)
 
     # filter to only IDs that start with "rs". Some IDs in the database are not standard (e.g. 10:104427825_C_T).
     df_gwas = df_gwas[df_gwas["id"].str.startswith('rs', na=False)]
