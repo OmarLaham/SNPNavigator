@@ -241,11 +241,19 @@
             }
         },
         tooltip: {
+            useHTML: true,
+            style: {
+              pointerEvents: 'auto'
+            },
             formatter: function () {
-                return '<b>SNP ID</b>: ' + snpsDetails[this.x]["id"] + '<br/>' +
-                    '<b>Chr</b>: ' + snpsDetails[this.x]["chr"] + '<br/>' +
-                    '<b>Pos</b>: ' + snpsDetails[this.x]["pos"] + '<br/>' +
-                    '<b>-log10(p-val)</b>: ' + this.y;
+                let snp_id = snpsDetails[this.x]["id"];
+                let snp_chr = snpsDetails[this.x]["chr"];
+                let snp_pos = snpsDetails[this.x]["pos"];
+                return '<b>SNP ID</b>: ' + snp_id + '<br/>' +
+                    '<b>Chr</b>: ' + snp_chr + '<br/>' +
+                    '<b>Pos</b>: ' + snp_pos + '<br/>' +
+                    '<b>-log10(p-val)</b>: ' + this.y + '<br />' +
+                    '<b>ClinVar</b>: <a target="_blank" href="https://www.ncbi.nlm.nih.gov/clinvar/?term=' + snp_id + '">Click here</a>';
             }
         },
         series
@@ -257,8 +265,9 @@
 
   function initSNPQuery() {
 
-    //start loading spinner. Will need this only for the first query.
+    //start loading spinner and hide results from previous query (if available)
     $('#queryResultsSpinner').removeClass("d-none");
+    $("#queryResultsWrapper").addClass("d-none");
 
     let run_id = "run_1";
     let spec_chr = $("#lstSpecChr").val()
@@ -308,18 +317,18 @@
         if(tblSNPs) {
           tblSNPs.destroy();
         }
-        tblSNPs = $('#dtSNPs').DataTable({data: selected_snps});
+        tblSNPs = $('#dtSNPs').DataTable({
+            data: selected_snps,
+            order: [[1, 'asc'], [2, 'asc']]
+        });
 
         //plot Manhattan
         let dataManhattan = data["manhattan"];
         plotManhattan(dataManhattan);
 
-
-        $("#queryResultsInstructions").hide(function() {
-          $("#queryResultsWrapper").removeClass("d-none");
-          $("#queryResultsWrapper").fadeIn(function() {});
-        });
-
+        $("#queryResultsSpinner").addClass("d-none");
+        $("#queryResultsWrapper").removeClass("d-none");
+        $("#queryResultsWrapper").fadeIn(function() {});
 
       })
       .fail(function(jqXHR, textStatus, errorThrown) {

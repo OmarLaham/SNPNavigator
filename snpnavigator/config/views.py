@@ -84,27 +84,29 @@ def filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_
 def filter_snps_for_cpg_islands(run_id, df_selected_snps, gwas_genome_version):
 
     # Algorithm:
-    # step 1- check for mutation that introduces C (=> COULD introduce CpG if G follows) or removes C (=> Could introduce CpG if G follows)
-    # step 2- for each selected mutation, query sequence online to check if G follows
+    # step 1- check for mutation that introduces C (=> COULD introduce CpG if G follows) or removes C (=> Could introduce CpG if G follows) then
+    # for each selected mutation, query sequence online to check if G follows
+    # step 2- check for mutation that introduces G (=> COULD introduce CpG if C preceeds) or removes G (=> Could introduce CpG if C preceeds) then
+    # for each selected mutation, query sequence online to check if C preceeds
     # step 3- return results
 
-    # step 1
-    df_selected_snps = df_selected_snps.query("origin_allele == 'C' | mutation_allele=='C'")
-    if len(df_selected_snps) == 0:
-        return df_selected_snps # We've got 0 matches ;)
-
-    # step 2
     snps_cpg_islands = {}
-    for index, row in df_selected_snps.iterrows():
+
+    # step 1: 'C' mutations
+    df_allele_specific_snps = df_selected_snps.query("origin_allele == 'C' | mutation_allele=='C'")
+
+    # for each selected mutation, query sequence online to check if G follows
+    for index, row in df_allele_specific_snps.iterrows():
         id = row["id"]
         chrom = row["chr"]
         pos = row["pos"]
         origin_allele = row["origin_allele"]
         mutation_allele = row["mutation_allele"]
 
+        # check if 'G' follows
         # query the UCSC Genome and get xml to check the next nucleotide
-        fetch_seq_url = "http://genome.ucsc.edu/cgi-bin/das/{0}/dna?segment={1}:{2},{3}".format(gwas_genome_version, chrom, pos+1, pos+1)
-        response = requests.get(fetch_seq_url)
+        fetch_next_n_seq_url = "http://genome.ucsc.edu/cgi-bin/das/{0}/dna?segment={1}:{2},{3}".format(gwas_genome_version, chrom, pos+1, pos+1)
+        response = requests.get(fetch_next_n_seq_url)
         seq_data = xmltodict.parse(response.content)
         next_nucleotide = seq_data["DASDNA"]["SEQUENCE"]["DNA"]["#text"]
 
@@ -113,6 +115,32 @@ def filter_snps_for_cpg_islands(run_id, df_selected_snps, gwas_genome_version):
             if mutation_allele == 'C':
                 snps_cpg_islands[id] = "introducing_CpG"
             elif origin_allele == 'C':
+                snps_cpg_islands[id] = "removing_CpG"
+
+    # step 2: 'G' mutations
+    df_allele_specific_snps = df_selected_snps.query("origin_allele == 'G' | mutation_allele=='G'")
+
+    # for each selected mutation, query sequence online to check if C preceeds
+    for index, row in df_allele_specific_snps.iterrows():
+        id = row["id"]
+        chrom = row["chr"]
+        pos = row["pos"]
+        origin_allele = row["origin_allele"]
+        mutation_allele = row["mutation_allele"]
+
+        # check if 'C' preceeds
+        # query the UCSC Genome and get xml to check the next nucleotide
+        fetch_prev_n_seq_url = "http://genome.ucsc.edu/cgi-bin/das/{0}/dna?segment={1}:{2},{3}".format(
+            gwas_genome_version, chrom, pos - 1, pos - 1)
+        response = requests.get(fetch_prev_n_seq_url)
+        seq_data = xmltodict.parse(response.content)
+        prev_nucleotide = seq_data["DASDNA"]["SEQUENCE"]["DNA"]["#text"]
+
+        if prev_nucleotide.upper() == 'C':
+            # decide if introducing or removing a CpG
+            if mutation_allele == 'G':
+                snps_cpg_islands[id] = "introducing_CpG"
+            elif origin_allele == 'G':
                 snps_cpg_islands[id] = "removing_CpG"
 
     cpg_islands_snps_ids = set(snps_cpg_islands.keys())
