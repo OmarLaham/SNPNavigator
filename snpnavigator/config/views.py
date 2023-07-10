@@ -171,22 +171,28 @@ def filter_snps_for_genomic_regions(run_id, df_selected_snps, gwas_genome_versio
 def filter_to_match_mismatch_other_condition(run_id, dict_run_config, df_selected_snps, condition_number, condition_match):
 
     # load condition_2 GWAS
+    condition_gwas_sep = dict_run_config["condition_{0}_gwas_file_sep".format(condition_number)]
     log("query", "load condition {0} GWAS".format(condition_number), LogStatus.Start)
     df_gwas_condition = pd.read_csv(
-        path.join(settings.MEDIA_ROOT, "data", "gwas", dict_run_config["condition_{0}_name".format(condition_number)],
+        path.join(settings.MEDIA_ROOT, "runs", run_id, "auto_generated_files", "gwas", dict_run_config["condition_{0}_name".format(condition_number)],
                   dict_run_config["condition_{0}_gwas_file".format(condition_number)]),
-        sep="\t", skiprows=dict_run_config["condition_{0}_gwas_file_skiprows".format(condition_number)])
-    df_gwas_condition.rename(columns={
-        dict_run_config["condition_{0}_pval_col".format(condition_number)]: "pval",
-        dict_run_config["condition_{0}_snp_id_col".format(condition_number)]: "id"
+        sep=condition_gwas_sep, skiprows=int(dict_run_config["condition_{0}_gwas_file_skiprows".format(condition_number)]))
+
+    # rename cols to standardize
+    condition_pval_col = dict_run_config["condition_{0}_pval_col".format(condition_number)]
+    condition_snp_id_col = dict_run_config["condition_{0}_snp_id_col".format(condition_number)]
+    df_gwas_condition = df_gwas_condition.rename(columns={
+        condition_pval_col: "pval",
+        condition_snp_id_col: "id"
     })
+
     log("query", "load condition {0} GWAS".format(condition_number), LogStatus.End)
     log("query", "filter to match/mismatch condition {0}.".format(condition_number), LogStatus.Start)
     df_gwas_condition = df_gwas_condition.query("pval <= {0}".format(gwas_pval_thresh))
     if condition_match == "match":
         df_selected_snps = df_selected_snps[df_selected_snps["id"].isin(set(df_gwas_condition["id"].values.tolist()))]
     elif condition_match == "mismatch":
-        df_selected_snps = df_selected_snps[not df_selected_snps["id"].isin(set(df_gwas_condition["id"].values.tolist()))]
+        df_selected_snps = df_selected_snps[~df_selected_snps["id"].isin(set(df_gwas_condition["id"].values.tolist()))]
     log("query", "filter to match/mismatch condition {0}.".format(condition_number), LogStatus.End)
 
     return df_selected_snps
@@ -199,11 +205,12 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, open_peak_cell_ty
     gwas_pval_col = dict_run_config["condition_1_pval_col"]
 
     log("query", "load GWAS", LogStatus.Start)
-    # TODO: commented till finding a solution to boost speed of loading df GWAS
-    #df_gwas = pd.read_csv(path.join(settings.MEDIA_ROOT, "data", "gwas", dict_run_config["condition_1_name"], dict_run_config["condition_1_gwas_file"]),
-    #                      sep="\t", skiprows=int(dict_run_config["condition_1_gwas_file_skiprows"]))
+    # TODO: implement creation of  GWAS-pval-thresholded files in auto_generated_files of the run
+    df_gwas = pd.read_csv(path.join(settings.MEDIA_ROOT, "runs", run_id, "auto_generated_files", "gwas", dict_run_config["condition_1_name"], dict_run_config["condition_1_gwas_file"]),
+                         sep=dict_run_config["condition_1_gwas_file_sep"], skiprows=int(dict_run_config["condition_1_gwas_file_skiprows"]))
+
     # European SZ GWAS will be loaded on server startup as temp condition1 GWAS file
-    df_gwas = settings.DF_GWAS
+    #df_gwas = settings.DF_GWAS
     log("query", "load GWAS", LogStatus.End)
 
     # rename some cols of gwas df for standardization

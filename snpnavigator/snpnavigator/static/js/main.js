@@ -276,7 +276,7 @@
     let cpg_island = ($("#snpCpGIsland").is(':checked')) ? 1: 0;
     let close_to_another_ocr = ($("#snpCloseToAnotherOCR").is(':checked')) ? 1 : 0;
     var condition_2_match = $("input:radio[name ='radioCondition2Match']:checked").val();
-    var condition_3_match = $("input:radio[name ='radioCcondition3Match']:checked").val();
+    var condition_3_match = $("input:radio[name ='radioCondition3Match']:checked").val();
 
     $('.atacCellType:checked').each(function() {
         open_peak_cell_types.push($(this).data('atac-cell-type'));
@@ -285,24 +285,6 @@
       open_peak_cell_types = open_peak_cell_types.join(",")
     } else {
       open_peak_cell_types = "NA"
-    }
-
-    $('.diseaseMatch:checked').each(function() {
-        diseases_peaks_match.push($(this).data('disease-match'));
-    });
-    if(diseases_peaks_match.length > 0) {
-      diseases_peaks_match = diseases_peaks_match.join(",")
-    } else {
-      diseases_peaks_match = "NA"
-    }
-
-    $('.diseaseMismatch:checked').each(function() {
-        diseases_peaks_mismatch.push($(this).data('disease-mismatch'));
-    });
-    if(diseases_peaks_mismatch.length > 0) {
-      diseases_peaks_mismatch = diseases_peaks_mismatch.join(",")
-    } else {
-      diseases_peaks_mismatch = "NA"
     }
 
     let get_request_link = `/json_snp_query/${run_id}/${spec_chr}/${spec_gen_region}/${open_peak_cell_types}/${cpg_island}/${close_to_another_ocr}/${condition_2_match}/${condition_3_match}`;
