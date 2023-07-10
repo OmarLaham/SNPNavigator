@@ -168,7 +168,30 @@ def filter_snps_for_genomic_regions(run_id, df_selected_snps, gwas_genome_versio
     df_selected_snps = df_selected_snps[df_selected_snps["id"].isin(selected_snps_ids)]
     return df_selected_snps
 
-def json_snp_query(request, run_id, spec_chr, spec_gen_region, open_peak_cell_types, cpg_island, close_to_another_ocr, diseases_peaks_match, diseases_peaks_mismatch):
+def filter_to_match_mismatch_other_condition(run_id, dict_run_config, df_selected_snps, condition_number, condition_match):
+
+    # load condition_2 GWAS
+    log("query", "load condition {0} GWAS".format(condition_number), LogStatus.Start)
+    df_gwas_condition = pd.read_csv(
+        path.join(settings.MEDIA_ROOT, "data", "gwas", dict_run_config["condition_{0}_name".format(condition_number)],
+                  dict_run_config["condition_{0}_gwas_file".format(condition_number)]),
+        sep="\t", skiprows=dict_run_config["condition_{0}_gwas_file_skiprows".format(condition_number)])
+    df_gwas_condition.rename(columns={
+        dict_run_config["condition_{0}_pval_col".format(condition_number)]: "pval",
+        dict_run_config["condition_{0}_snp_id_col".format(condition_number)]: "id"
+    })
+    log("query", "load condition {0} GWAS".format(condition_number), LogStatus.End)
+    log("query", "filter to match/mismatch condition {0}.".format(condition_number), LogStatus.Start)
+    df_gwas_condition = df_gwas_condition.query("pval <= {0}".format(gwas_pval_thresh))
+    if condition_match == "match":
+        df_selected_snps = df_selected_snps[df_selected_snps["id"].isin(set(df_gwas_condition["id"].values.tolist()))]
+    elif condition_match == "mismatch":
+        df_selected_snps = df_selected_snps[not df_selected_snps["id"].isin(set(df_gwas_condition["id"].values.tolist()))]
+    log("query", "filter to match/mismatch condition {0}.".format(condition_number), LogStatus.End)
+
+    return df_selected_snps
+
+def json_snp_query(request, run_id, spec_chr, spec_gen_region, open_peak_cell_types, cpg_island, close_to_another_ocr, condition_2_match, condition_3_match):
 
     dict_run_config = helpers.get_run_config(run_id)
 
@@ -199,6 +222,13 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, open_peak_cell_ty
     # filter for specific chr if passed
     if spec_chr != "NA":
         df_gwas = df_gwas.query("chr == {0}".format(spec_chr))
+
+    # filter for match/mismatch with condition_2
+    if condition_2_match != "NA":
+        df_gwas = filter_to_match_mismatch_other_condition(run_id, dict_run_config, df_gwas, 2, condition_2_match)
+
+    if condition_3_match != "NA":
+        df_gwas = filter_to_match_mismatch_other_condition(run_id, dict_run_config, df_gwas, 3, condition_3_match)
 
     # filter for genomic region if passed
     if spec_gen_region != "NA":
@@ -319,7 +349,7 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, open_peak_cell_ty
     df_selected_snps["operations"] = "<a href='javascript:;'>some link</a>"
 
     return JsonResponse({
-        "selected_snps": df_selected_snps.values.tolist(),
+        "selected_snps": df_selected_snps[["id", "chr", "pos", "pval", "operations"]].values.tolist(),
         "snps_cpg_islands": snps_cpg_islands if snps_cpg_islands else [],
         "manhattan": {
             "peaks": [],

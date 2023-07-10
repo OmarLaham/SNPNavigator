@@ -275,8 +275,8 @@
     var open_peak_cell_types = Array();
     let cpg_island = ($("#snpCpGIsland").is(':checked')) ? 1: 0;
     let close_to_another_ocr = ($("#snpCloseToAnotherOCR").is(':checked')) ? 1 : 0;
-    var diseases_peaks_match = Array();
-    var diseases_peaks_mismatch = Array();
+    var condition_2_match = $("input:radio[name ='condition2Match']:checked").val();
+    var condition_2_match = $("input:radio[name ='condition3Match']:checked").val();
 
     $('.atacCellType:checked').each(function() {
         open_peak_cell_types.push($(this).data('atac-cell-type'));
@@ -305,7 +305,7 @@
       diseases_peaks_mismatch = "NA"
     }
 
-    let get_request_link = `/json_snp_query/${run_id}/${spec_chr}/${spec_gen_region}/${open_peak_cell_types}/${cpg_island}/${close_to_another_ocr}/${diseases_peaks_match}/${diseases_peaks_mismatch}`;
+    let get_request_link = `/json_snp_query/${run_id}/${spec_chr}/${spec_gen_region}/${open_peak_cell_types}/${cpg_island}/${close_to_another_ocr}/${condition_2_match}/${condition_3_match}`;
 
     $.get(get_request_link)
       .done(function(data, textStatus, jqXHR) {

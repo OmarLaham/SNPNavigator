@@ -11,7 +11,7 @@ urlpatterns = [
     path("about/", TemplateView.as_view(template_name="pages/about.html"), name="about"),
     path("start/", TemplateView.as_view(template_name="pages/start.html"), name="start"),
     path("main/<str:run_id>", TemplateView.as_view(template_name="pages/main.html"), name="main"),
-    path("json_snp_query/<str:run_id>/<str:spec_chr>/<str:spec_gen_region>/<str:open_peak_cell_types>/<int:cpg_island>/<int:close_to_another_ocr>/<str:diseases_peaks_match>/<str:diseases_peaks_mismatch>", views.json_snp_query, name="json_snp_query"),
+    path("json_snp_query/<str:run_id>/<str:spec_chr>/<str:spec_gen_region>/<str:open_peak_cell_types>/<int:cpg_island>/<int:close_to_another_ocr>/<str:condition_2_match>/<str:condition_3_match>", views.json_snp_query, name="json_snp_query"),
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
     # User management
