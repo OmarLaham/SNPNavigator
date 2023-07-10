@@ -275,8 +275,8 @@
     var open_peak_cell_types = Array();
     let cpg_island = ($("#snpCpGIsland").is(':checked')) ? 1: 0;
     let close_to_another_ocr = ($("#snpCloseToAnotherOCR").is(':checked')) ? 1 : 0;
-    var condition_2_match = $("input:radio[name ='condition2Match']:checked").val();
-    var condition_2_match = $("input:radio[name ='condition3Match']:checked").val();
+    var condition_2_match = $("input:radio[name ='radioCondition2Match']:checked").val();
+    var condition_3_match = $("input:radio[name ='radioCcondition3Match']:checked").val();
 
     $('.atacCellType:checked').each(function() {
         open_peak_cell_types.push($(this).data('atac-cell-type'));
