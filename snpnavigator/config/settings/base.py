@@ -280,11 +280,3 @@ SOCIALACCOUNT_FORMS = {"signup": "snpnavigator.users.forms.UserSocialSignupForm"
 
 # Your stuff...
 # ------------------------------------------------------------------------------
-
-# temp solution to boost speed of loading df GWAS
-# # TODO: remove after finding a solution to boost speed of df GWAS loading
-# #load sz GWAS
-# print("> settings.base:", "loading df sz GWAS..")
-# DF_GWAS = pd.read_csv(path.join(MEDIA_ROOT, "runs", "run_1", "auto_generated_files", "gwas", "sz", "PGC3_SCZ_wave3.european.autosome.public.v3.vcf_thresholded.tsv"),
-#                       sep="\t", skiprows=73)
-# print("> settings.base:", "loaded df sz GWAS.")

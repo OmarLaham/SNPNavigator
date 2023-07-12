@@ -272,6 +272,7 @@
     let run_id = "run_1";
     let spec_chr = $("#lstSpecChr").val();
     let spec_gen_region = $('#lstGenomicRegion').val();
+    let filter_eQTL = $('#lsteQTL').val();
     var open_peak_cell_types = Array();
     let cpg_island = ($("#snpCpGIsland").is(':checked')) ? 1: 0;
     let close_to_another_ocr = ($("#snpCloseToAnotherOCR").is(':checked')) ? 1 : 0;
@@ -287,7 +288,7 @@
       open_peak_cell_types = "NA"
     }
 
-    let get_request_link = `/json_snp_query/${run_id}/${spec_chr}/${spec_gen_region}/${open_peak_cell_types}/${cpg_island}/${close_to_another_ocr}/${condition_2_match}/${condition_3_match}`;
+    let get_request_link = `/json_snp_query/${run_id}/${spec_chr}/${spec_gen_region}/${filter_eQTL}/${open_peak_cell_types}/${cpg_island}/${close_to_another_ocr}/${condition_2_match}/${condition_3_match}`;
 
     $.get(get_request_link)
       .done(function(data, textStatus, jqXHR) {

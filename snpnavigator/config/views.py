@@ -176,7 +176,7 @@ def filter_to_match_mismatch_other_condition(run_id, dict_run_config, df_selecte
     df_gwas_condition = pd.read_csv(
         path.join(settings.MEDIA_ROOT, "runs", run_id, "auto_generated_files", "gwas", dict_run_config["condition_{0}_name".format(condition_number)],
                   dict_run_config["condition_{0}_gwas_file".format(condition_number)]),
-        sep=condition_gwas_sep, skiprows=int(dict_run_config["condition_{0}_gwas_file_skiprows".format(condition_number)]))
+        sep=condition_gwas_sep)
 
     # rename cols to standardize
     condition_pval_col = dict_run_config["condition_{0}_pval_col".format(condition_number)]
@@ -197,7 +197,7 @@ def filter_to_match_mismatch_other_condition(run_id, dict_run_config, df_selecte
 
     return df_selected_snps
 
-def json_snp_query(request, run_id, spec_chr, spec_gen_region, open_peak_cell_types, cpg_island, close_to_another_ocr, condition_2_match, condition_3_match):
+def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, open_peak_cell_types, cpg_island, close_to_another_ocr, condition_2_match, condition_3_match):
 
     dict_run_config = helpers.get_run_config(run_id)
 
@@ -207,7 +207,7 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, open_peak_cell_ty
     log("query", "load GWAS", LogStatus.Start)
     # TODO: implement creation of  GWAS-pval-thresholded files in auto_generated_files of the run
     df_gwas = pd.read_csv(path.join(settings.MEDIA_ROOT, "runs", run_id, "auto_generated_files", "gwas", dict_run_config["condition_1_name"], dict_run_config["condition_1_gwas_file"]),
-                         sep=dict_run_config["condition_1_gwas_file_sep"], skiprows=int(dict_run_config["condition_1_gwas_file_skiprows"]))
+                         sep=dict_run_config["condition_1_gwas_file_sep"])
 
     # European SZ GWAS will be loaded on server startup as temp condition1 GWAS file
     #df_gwas = settings.DF_GWAS
@@ -222,6 +222,9 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, open_peak_cell_ty
         dict_run_config["condition_1_allele_origin_col"]: "origin_allele",
         dict_run_config["condition_1_allele_mutation_col"]: "mutation_allele"
     })
+
+    # filter to only IDs that start with "rs". Some IDs in the database are not standard (e.g. 10:104427825_C_T).
+    df_gwas = df_gwas[df_gwas["id"].str.startswith('rs', na=False)]
 
     # filter using GWAS pval thresh
     df_gwas = df_gwas.query("pval <= {0}".format(gwas_pval_thresh))
@@ -241,11 +244,9 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, open_peak_cell_ty
     if spec_gen_region != "NA":
         df_gwas = filter_snps_for_genomic_regions(run_id, df_gwas, gwas_genome_version, spec_gen_region)
 
-    # filter to only IDs that start with "rs". Some IDs in the database are not standard (e.g. 10:104427825_C_T).
-    df_gwas = df_gwas[df_gwas["id"].str.startswith('rs', na=False)]
 
     #filter SNPs using selected criteria in the UI
-    df_snps = df_gwas[["id", "chr", "pos", "pval", "origin_allele", "mutation_allele"]]
+    df_snps = df_gwas[["id", "chr", "pos", "pval", "eqtl_fdr", "origin_allele", "mutation_allele"]]
 
     #calc -log10(pval)
     log("query", "calc snps -log10(pval)", LogStatus.Start)
@@ -255,6 +256,12 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, open_peak_cell_ty
         , axis=1
     )
     log("query", "calc snps -log10(pval)", LogStatus.End)
+
+    # select SNPs that overlap with eQTL (FDR < 0.05) if overlap_eqtl is selected
+    if overlap_eqtl != "NA" and overlap_eqtl == "overlap-eqtl":
+        log("query", "filter_overlap_eQTL", LogStatus.Start)
+        df_snps = df_snps.query("eqtl_fdr != '-'") # NOTE: when I mapped SNPs to eQTLs I mapped only to eQTLs with FDR < 0.05 and if there is no overlapping eQTL I used FDR='-'
+        log("query", "filter_overlap_eQTL", LogStatus.End)
 
     # integrate ATAC-seq peaks if included in queries
     df_peaks = pd.read_csv(path.join(settings.MEDIA_ROOT, "data", "peaks", dict_run_config["condition_1_name"], dict_run_config["condition_1_peaks_file"]),
@@ -356,7 +363,7 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, open_peak_cell_ty
     df_selected_snps["operations"] = "<a href='javascript:;'>some link</a>"
 
     return JsonResponse({
-        "selected_snps": df_selected_snps[["id", "chr", "pos", "pval", "operations"]].values.tolist(),
+        "selected_snps": df_selected_snps[["id", "chr", "pos", "pval", "eqtl_fdr", "operations"]].values.tolist(),
         "snps_cpg_islands": snps_cpg_islands if snps_cpg_islands else [],
         "manhattan": {
             "peaks": [],

@@ -45,7 +45,10 @@
       </select>
       <hr />
       <h6>eQTL</h6>
-      eQTL options go here..
+      <select id="lsteQTL" class="form-select" aria-label="Filter for overlapping with eQTLs">
+        <option value="NA" selected>No Filter</option>
+        <option value="overlap-eqtl">Overlapping with eQTL (FDR < 0.05)</option>
+      </select>
       <hr />
       <h6>Lays in peaks of:</h6>
       <ul id="lst-ataq-seq-peaks" class="list-group">
@@ -178,6 +181,7 @@
                           <th>Chrom</th>
                           <th>Pos</th>
                           <th>P-val</th>
+                          <th>eQTL FDR</th>
                           <th>Operations</th>
                         </tr>
                     </thead>
