@@ -202,19 +202,15 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
     dict_run_config = helpers.get_run_config(run_id)
 
     gwas_genome_version = dict_run_config["gwas_genome_version"]
-    gwas_pval_col = dict_run_config["condition_1_pval_col"]
 
     log("query", "load GWAS", LogStatus.Start)
     # TODO: implement creation of  GWAS-pval-thresholded files in auto_generated_files of the run
-    df_gwas = pd.read_csv(path.join(settings.MEDIA_ROOT, "runs", run_id, "auto_generated_files", "gwas", dict_run_config["condition_1_name"], dict_run_config["condition_1_gwas_file"]),
+    df_snps = pd.read_csv(path.join(settings.MEDIA_ROOT, "runs", run_id, "auto_generated_files", "gwas", dict_run_config["condition_1_name"], dict_run_config["condition_1_gwas_file"]),
                          sep=dict_run_config["condition_1_gwas_file_sep"])
-
-    # European SZ GWAS will be loaded on server startup as temp condition1 GWAS file
-    #df_gwas = settings.DF_GWAS
     log("query", "load GWAS", LogStatus.End)
 
     # rename some cols of gwas df for standardization
-    df_gwas = df_gwas.rename(columns={
+    df_snps = df_snps.rename(columns={
         dict_run_config["condition_1_pval_col"]: "pval",
         dict_run_config["condition_1_snp_id_col"]: "id",
         dict_run_config["condition_1_chrom_col"]: "chr",
@@ -224,31 +220,12 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
     })
 
     # filter to only IDs that start with "rs". Some IDs in the database are not standard (e.g. 10:104427825_C_T).
-    df_gwas = df_gwas[df_gwas["id"].str.startswith('rs', na=False)]
+    df_snps = df_snps[df_snps["id"].str.startswith('rs', na=False)]
 
     # filter using GWAS pval thresh
-    df_gwas = df_gwas.query("pval <= {0}".format(gwas_pval_thresh))
+    df_snps = df_snps.query("pval <= {0}".format(gwas_pval_thresh))
 
-    # filter for specific chr if passed
-    if spec_chr != "NA":
-        df_gwas = df_gwas.query("chr == {0}".format(spec_chr))
-
-    # filter for match/mismatch with condition_2
-    if condition_2_match != "NA":
-        df_gwas = filter_to_match_mismatch_other_condition(run_id, dict_run_config, df_gwas, 2, condition_2_match)
-
-    if condition_3_match != "NA":
-        df_gwas = filter_to_match_mismatch_other_condition(run_id, dict_run_config, df_gwas, 3, condition_3_match)
-
-    # filter for genomic region if passed
-    if spec_gen_region != "NA":
-        df_gwas = filter_snps_for_genomic_regions(run_id, df_gwas, gwas_genome_version, spec_gen_region)
-
-
-    #filter SNPs using selected criteria in the UI
-    df_snps = df_gwas[["id", "chr", "pos", "pval", "eqtl_gene_id", "eqtl_fdr", "origin_allele", "mutation_allele"]]
-
-    #calc -log10(pval)
+    # calc -log10(pval)
     log("query", "calc snps -log10(pval)", LogStatus.Start)
     df_snps["-log10(pval)"] = ""
     df_snps["-log10(pval)"] = df_snps.apply(
@@ -257,33 +234,65 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
     )
     log("query", "calc snps -log10(pval)", LogStatus.End)
 
+    # sort by chr then by pos
+    log("query", "sorting df snps by chr then pos", LogStatus.Start)
+    df_snps = df_snps.sort_values(["chr", "pos"], ascending=True)
+    log("query", "sorting df snps by chr then pos", LogStatus.End)
+
+    # store all SNPs ids and df to be able to differentiate selected from unselected SNPs latter
+    all_snps_ids = set(df_snps.id.values.tolist())
+    df_all_snps = df_snps.copy()
+
+    # filter for specific chr if passed
+    if spec_chr != "NA":
+        df_snps = df_snps.query("chr == {0}".format(spec_chr))
+
+    # filter for match/mismatch with condition_2
+    if condition_2_match != "NA":
+        df_snps = filter_to_match_mismatch_other_condition(run_id, dict_run_config, df_snps, 2, condition_2_match)
+
+    if condition_3_match != "NA":
+        df_snps = filter_to_match_mismatch_other_condition(run_id, dict_run_config, df_snps, 3, condition_3_match)
+
+    # filter for genomic region if passed
+    if spec_gen_region != "NA":
+        df_snps = filter_snps_for_genomic_regions(run_id, df_snps, gwas_genome_version, spec_gen_region)
+
+
+    #keep cols that we really need
+    df_snps = df_snps[["id", "chr", "pos", "pval", "eqtl_gene_id", "eqtl_fdr", "origin_allele", "mutation_allele"]]
+
     # select SNPs that overlap with eQTL (FDR < 0.05) if overlap_eqtl is selected
     if overlap_eqtl != "NA" and overlap_eqtl == "overlap-eqtl":
         log("query", "filter_overlap_eQTL", LogStatus.Start)
         df_snps = df_snps.query("eqtl_fdr != '-'") # NOTE: when I mapped SNPs to eQTLs I mapped only to eQTLs with FDR < 0.05 and if there is no overlapping eQTL I used FDR='-'
         log("query", "filter_overlap_eQTL", LogStatus.End)
 
-    # integrate ATAC-seq peaks if included in queries
-    df_peaks = pd.read_csv(path.join(settings.MEDIA_ROOT, "data", "peaks", dict_run_config["condition_1_name"], dict_run_config["condition_1_peaks_file"]),
-                          sep="\t", index_col=False)
-
-    # rename some cols of peaks df for standardization
-    df_peaks = df_peaks.rename(columns={
-        dict_run_config["condition_1_peaks_chrom_col"]: "chr",
-        dict_run_config["condition_1_peaks_start_col"]: "start",
-        dict_run_config["condition_1_peaks_end_col"]: "end",
-        dict_run_config["condition_1_peaks_gene_id_col"]: "geneId",
-        dict_run_config["condition_1_peaks_associated_gene_name_col"]: "assoc_gene_name"
-    })
-
-    # get peaks cell types and count matrix column names from config
-    peak_cell_types = dict_run_config["condition_1_peaks_cell_types"].split(",")# e.g. "GLUT,GABA,OLIG"
-    peaks_count_matrix_column_names = dict_run_config["condition_1_count_matrix_column_names"].split(",")# e.g. "AVG_GLUT,AVG_GABA,AVG_OLIG"
 
     # filter using OCRs of selected cell types if provided
     #df_selected_snps = df_snps.copy()
     snps_cpg_islands = None
     if open_peak_cell_types != "NA":
+
+        # integrate ATAC-seq peaks if included in queries
+        df_peaks = pd.read_csv(path.join(settings.MEDIA_ROOT, "data", "peaks", dict_run_config["condition_1_name"],
+                                         dict_run_config["condition_1_peaks_file"]),
+                               sep="\t", index_col=False)
+
+        # rename some cols of peaks df for standardization
+        df_peaks = df_peaks.rename(columns={
+            dict_run_config["condition_1_peaks_chrom_col"]: "chr",
+            dict_run_config["condition_1_peaks_start_col"]: "start",
+            dict_run_config["condition_1_peaks_end_col"]: "end",
+            dict_run_config["condition_1_peaks_gene_id_col"]: "geneId",
+            dict_run_config["condition_1_peaks_associated_gene_name_col"]: "assoc_gene_name"
+        })
+
+        # get peaks cell types and count matrix column names from config
+        peak_cell_types = dict_run_config["condition_1_peaks_cell_types"].split(",")  # e.g. "GLUT,GABA,OLIG"
+        peaks_count_matrix_column_names = dict_run_config["condition_1_count_matrix_column_names"].split(
+            ",")  # e.g. "AVG_GLUT,AVG_GABA,AVG_OLIG"
+
         log("query", "filter_snps_in_ocrs", LogStatus.Start)
         df_snps = filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_matrix_column_names, open_peak_cell_types, close_to_another_ocr)
         log("query", "filter_snps_in_ocrs", LogStatus.End)
@@ -294,51 +303,40 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
             log("query", "filter_snps_for_cpg_islands", LogStatus.End)
 
 
-    # add "selected" col to df_snps, the df containing all gwas sig. snps
-    log("query", "adding 'selected' col to df_snps", LogStatus.Start)
-    selected_snps_ids = set(df_snps.id.values.tolist())
-    df_snps["selected"] = ""
-    df_snps["selected"] = df_snps.apply(
-        lambda row: True if row["id"] in selected_snps_ids else False
-        , axis=1
-    )
-    log("query", "adding 'selected' col to df_snps", LogStatus.End)
-
     # group snps into chromosomes for Manhattan plot
     # there will be 2 series: selected and not-selected
     log("query", "grouping snps into series for Manhatan plot", LogStatus.Start)
 
-    # sort by chr then by pos
-    log("query", "sorting df snps by chr then pos", LogStatus.Start)
-    df_snps = df_snps.sort_values(["chr", "pos"], ascending=True)
     df_snps = df_snps.reset_index()
-    log("query", "sorting df snps by chr then pos", LogStatus.End)
 
     # create Manhattan plot data
-    df_snps_manhattan = df_snps.copy()
+    df_snps_manhattan = df_all_snps.copy().reset_index()
     del df_snps_manhattan["index"]
     df_snps_manhattan = df_snps_manhattan.reset_index() # reset index to use the original index as x axis value
     df_snps_manhattan.rename({"index": "x", "-log10(pval)": "y"}, inplace=True)
 
     # reorder cols so firs two cols are x and y for Highcharts
-    df_snps_manhattan = df_snps_manhattan[["index", "-log10(pval)", "id", "pval", "chr", "pos", "selected"]]
+    df_snps_manhattan = df_snps_manhattan[["index", "-log10(pval)", "id", "pval", "chr", "pos"]]
 
     # split into 2 manhattan series and keep only x and y cols. Now: Highcharts accepts only numbers and takes only the first 2 values (performance)
-    manhattan_series_unselected = df_snps_manhattan[~df_snps_manhattan["selected"]][["index", "-log10(pval)"]]
-    manhattan_series_selected = df_snps_manhattan[df_snps_manhattan["selected"]] # col selection for selected SNPs will be done later after splitting by chr
-
-    # create manhattan_series object for Highcharts and init it with unselected snps
-    manhattan_series = [
-        {
-            "name": 'Unselected SNPs',
-            "id": "Unselected SNPs",
-            "marker": {
-                "symbol": 'circle'  # can be e.g. triangle or square
-            },
-            "color": "lightgray",
-            "data": manhattan_series_unselected.values.tolist()
-        }
-    ]
+    selected_snps_ids = set(df_snps.id.values.tolist())
+    unselected_snps_ids = all_snps_ids - selected_snps_ids
+    manhattan_series_unselected = df_snps_manhattan[df_snps_manhattan["id"].isin(unselected_snps_ids)][["index", "-log10(pval)"]]
+    manhattan_series_selected = df_snps_manhattan[df_snps_manhattan["id"].isin(selected_snps_ids)] # col selection for selected SNPs will be done later after splitting by chr
+    # create manhattan_series object for Highcharts and init it with unselected snps - if any -
+    manhattan_series = []
+    if len(manhattan_series_unselected):
+        manhattan_series.append(
+            {
+                "name": 'Unselected SNPs',
+                "id": "Unselected SNPs",
+                "marker": {
+                    "symbol": 'circle'  # can be e.g. triangle or square
+                },
+                "color": "lightgray",
+                "data": manhattan_series_unselected.values.tolist()
+            }
+        )
 
     # split selected into multiple series so they can get different colors
     manhattan_selected_colors = ["green","blue","yellow","red"]
@@ -386,21 +384,3 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
         }
     })
 
-# def start(request):
-#
-#     if request.method == 'POST':
-#         print("email:", request.POST["email"])
-#         print("description:", request.POST["description"])
-#         context = {}
-#         html_template = loader.get_template('home/start.html')
-#         return HttpResponse(html_template.render(context, request))
-#     else:
-#         context = {}
-#         html_template = loader.get_template('home/start.html')
-#         return HttpResponse(html_template.render(context, request))
-#
-# def upload(request, run_id):
-#
-#     context = {}
-#     html_template = loader.get_template('home/upload.html')
-#     return HttpResponse(html_template.render(context, request))
