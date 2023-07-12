@@ -246,7 +246,7 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
 
 
     #filter SNPs using selected criteria in the UI
-    df_snps = df_gwas[["id", "chr", "pos", "pval", "eqtl_fdr", "origin_allele", "mutation_allele"]]
+    df_snps = df_gwas[["id", "chr", "pos", "pval", "eqtl_gene_id", "eqtl_fdr", "origin_allele", "mutation_allele"]]
 
     #calc -log10(pval)
     log("query", "calc snps -log10(pval)", LogStatus.Start)
@@ -281,22 +281,22 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
     peaks_count_matrix_column_names = dict_run_config["condition_1_count_matrix_column_names"].split(",")# e.g. "AVG_GLUT,AVG_GABA,AVG_OLIG"
 
     # filter using OCRs of selected cell types if provided
-    df_selected_snps = df_snps.copy()
+    #df_selected_snps = df_snps.copy()
     snps_cpg_islands = None
     if open_peak_cell_types != "NA":
         log("query", "filter_snps_in_ocrs", LogStatus.Start)
-        df_selected_snps = filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_matrix_column_names, open_peak_cell_types, close_to_another_ocr)
+        df_snps = filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_matrix_column_names, open_peak_cell_types, close_to_another_ocr)
         log("query", "filter_snps_in_ocrs", LogStatus.End)
 
         if cpg_island != 0:
             log("query", "filter_snps_for_cpg_islands", LogStatus.Start)
-            df_selected_snps, snps_cpg_islands = filter_snps_for_cpg_islands(run_id, df_selected_snps, gwas_genome_version)
+            df_snps, snps_cpg_islands = filter_snps_for_cpg_islands(run_id, df_snps, gwas_genome_version)
             log("query", "filter_snps_for_cpg_islands", LogStatus.End)
 
 
     # add "selected" col to df_snps, the df containing all gwas sig. snps
     log("query", "adding 'selected' col to df_snps", LogStatus.Start)
-    selected_snps_ids = set(df_selected_snps.id.values.tolist())
+    selected_snps_ids = set(df_snps.id.values.tolist())
     df_snps["selected"] = ""
     df_snps["selected"] = df_snps.apply(
         lambda row: True if row["id"] in selected_snps_ids else False
@@ -324,8 +324,8 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
     df_snps_manhattan = df_snps_manhattan[["index", "-log10(pval)", "id", "pval", "chr", "pos", "selected"]]
 
     # split into 2 manhattan series and keep only x and y cols. Now: Highcharts accepts only numbers and takes only the first 2 values (performance)
-    manhattan_series_unselected = df_snps_manhattan[df_snps_manhattan["selected"] == False][["index", "-log10(pval)"]]
-    manhattan_series_selected = df_snps_manhattan[df_snps_manhattan["selected"] == True] # col selection for selected SNPs will be done later after splitting by chr
+    manhattan_series_unselected = df_snps_manhattan[~df_snps_manhattan["selected"]][["index", "-log10(pval)"]]
+    manhattan_series_selected = df_snps_manhattan[df_snps_manhattan["selected"]] # col selection for selected SNPs will be done later after splitting by chr
 
     # create manhattan_series object for Highcharts and init it with unselected snps
     manhattan_series = [
@@ -359,11 +359,25 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
         )
     log("query", "grouping snps into series for Manhatan plot", LogStatus.End)
 
-    # add "Operations" col to use in the UI
-    df_selected_snps["operations"] = "<a href='javascript:;'>some link</a>"
+    # add "Operations" col to use in the UI.
+    df_snps["operations"] = ""
+    df_snps["operations"] = df_snps.apply(
+        lambda row: "<a class='tbl-snps-lnk' target='_blank' href='https://www.ncbi.nlm.nih.gov/snp/?term={0}'>dbSNP</a>".format(row["id"]) + ", " +
+                    "<a class='tbl-snps-lnk' target='_blank' href='https://www.ncbi.nlm.nih.gov/clinvar/?term={0}'>ClinVar</a>".format(row["id"]) + ", " +
+                    "<a class='tbl-snps-lnk' target='_blank' href='https://www.ebi.ac.uk/gwas/variants/{0}'>GWAS Catalog</a>".format(row["id"])
+        , axis=1
+    )
+    "<a href='javascript:;'>some link</a>"
+    # modify "eQTL Gene ID" col as an HTML link
+    df_snps["eqtl_gene_id"] = df_snps.apply(
+        lambda row: "<a class='tbl-snps-lnk' target='_blank' href='http://www.ensembl.org/Homo_sapiens/Gene/Summary?g={0}'>{0}</a>".format(row["eqtl_gene_id"])
+        , axis=1
+    )
+
+
 
     return JsonResponse({
-        "selected_snps": df_selected_snps[["id", "chr", "pos", "pval", "eqtl_fdr", "operations"]].values.tolist(),
+        "selected_snps": df_snps[["id", "chr", "pos", "pval", "eqtl_gene_id", "eqtl_fdr", "operations"]].values.tolist(),
         "snps_cpg_islands": snps_cpg_islands if snps_cpg_islands else [],
         "manhattan": {
             "peaks": [],

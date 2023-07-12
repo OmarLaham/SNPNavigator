@@ -253,7 +253,7 @@
                     '<b>Chr</b>: ' + snp_chr + '<br/>' +
                     '<b>Pos</b>: ' + snp_pos + '<br/>' +
                     '<b>-log10(p-val)</b>: ' + this.y + '<br />' +
-                    '<hr />' + 
+                    '<hr />' +
                     '<b>dbSNP Search</b>: <a target="_blank" href="https://www.ncbi.nlm.nih.gov/snp/?term=' + snp_id + '">(Click)</a><br />' +
                     '<b>ClinVar</b>: <a target="_blank" href="https://www.ncbi.nlm.nih.gov/clinvar/?term=' + snp_id + '">(Click)</a><br />' +
                     '<b>GWAS Catalog</b>: <a target="_blank" href="https://www.ebi.ac.uk/gwas/variants/' + snp_id + '">(Click)</a><br />';
