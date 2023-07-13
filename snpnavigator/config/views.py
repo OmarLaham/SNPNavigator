@@ -38,20 +38,26 @@ from . import helpers
 from .helpers import log, LogStatus
 
 gwas_pval_thresh = 5 * (10 ** -8)
-peak_open_thresh = 10 #TODO: replace by q-val after peak calling
+# TODO: replace by q-val after peak calling or allow user to set count matrix min value to consider OCR (open) or cell-type-specific OCR
+# note that according to the paper https://www.nature.com/articles/s41467-020-19319-2 they define a cell-type-specific OCR when the peak is differentially open \
+# in a pairwise comparison with all other cell types
+peak_open_thresh = 8 # I averaged cols from same cell type -> calculated mins of averages -> average all result mins together!
 
 
 def filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_matrix_column_names, open_peak_cell_types, close_to_another_ocr): #filter snps using OCRs (Open Chromatin Regions)
 
     # filter df_peaks to include only peaks that are open for selected cell types in (open_peak_cell_types). This will make iteration faster
     log("filter_snps_in_ocrs", "filter df_peaks", LogStatus.Start)
-    df_peaks_filter_query = []
+    filter_query_cell_types = []
+
+    #split str into lst.
+    open_peak_cell_types = open_peak_cell_types.split(",")
+
     for col_name in peaks_count_matrix_column_names:
         for open_peak_cell_type in open_peak_cell_types:
             if open_peak_cell_type in col_name:
-                df_peaks_filter_query.append("{0} > {1}".format(col_name, peak_open_thresh))
-    df_peaks_filter_query = " & ".join(df_peaks_filter_query)
-    df_peaks_filtered = df_peaks.query(df_peaks_filter_query)
+                filter_query_cell_types.append(open_peak_cell_type)
+    df_peaks_filtered = df_peaks.query("specific_for_cell_type == @filter_query_cell_types")
     log("filter_snps_in_ocrs", "filter df_peaks", LogStatus.End)
     log("len(filtered_peaks)", len(df_peaks_filtered))
 

@@ -50,8 +50,8 @@
         <option value="overlap-eqtl">Overlapping with eQTL (FDR < 0.05)</option>
       </select>
       <hr />
-      <h6>Lays in peaks of:</h6>
-      <ul id="lst-ataq-seq-peaks" class="list-group">
+      <h6>Lays in a peak specific for:</h6>
+      <ul id="lstATAQSeqPeaks" class="list-group">
         <li class="list-group-item">
           <input class="form-check-input me-1 atacCellType" data-atac-cell-type="GABA" type="checkbox" value="" id="atacCellType1">
           <label class="form-check-label" for="atacCellType1">GABA</label>
@@ -65,6 +65,7 @@
           <label class="form-check-label" for="atacCellType3">OLIG</label>
         </li>
       </ul>
+      <span class="fst-italic text-secondary">- OR operator is used in case of multiple selection.</span>
       <hr />
       <h6>SNP Filter</h6>
       <ul id="lst-snp-filter" class="list-group">
