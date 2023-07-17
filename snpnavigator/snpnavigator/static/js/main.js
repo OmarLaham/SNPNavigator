@@ -295,7 +295,7 @@
 
     let get_request_link = `/json_snp_query/${run_id}/${spec_chr}/${spec_gen_region}/${filter_eQTL}/${open_peak_cell_types}/${cell_specific_ocrs}/${cpg_island}/${close_to_another_ocr}/${condition_2_match}/${condition_3_match}`;
 
-    let TEST_MODE = true;
+    let TEST_MODE = false;
     if(TEST_MODE) {
         alert(get_request_link);
         return;

@@ -48,7 +48,7 @@ def filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_
 
     # filter df_peaks to include only peaks that are open for selected cell types in (open_peak_cell_types). This will make iteration faster
     log("filter_snps_in_ocrs", "filter df_peaks", LogStatus.Start)
-    filter_query_cell_types = []
+    query_parts = []
 
     #split str into lst.
     open_peak_cell_types = open_peak_cell_types.split(",")
@@ -57,9 +57,9 @@ def filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_
         for col_name in peaks_count_matrix_column_names:
             for open_peak_cell_type in open_peak_cell_types:
                 if open_peak_cell_type in col_name:
-                    filter_query_cell_types.append(open_peak_cell_type)
-        df_peaks_filtered = df_peaks.query("specific_for_cell_type == @filter_query_cell_types")
-    elif cell_specific_ocrs == "no": # filter for OCRs regardless of cell-type specifity
+                    query_parts.append(open_peak_cell_type)
+        df_peaks_filtered = df_peaks.query("specific_for_cell_type == @query_parts")
+    elif cell_specific_ocrs == "no": # filter for OCRs regardless of cell-type specificity
 
         cell_specific_ocr_thresh = {
             "GLU": 0,
@@ -71,8 +71,8 @@ def filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_
         for col_name in peaks_count_matrix_column_names:
             for open_peak_cell_type in open_peak_cell_types:
                 if open_peak_cell_type in col_name:
-                    filter_query_cell_types.append("Avg_{0} > {1}".format(col_name, cell_specific_ocr_thresh[open_peak_cell_type]))
-        df_peaks_filtered = df_peaks.query(filter_query_cell_types.join(" | "))
+                    query_parts.append("Avg_{0} > {1}".format(open_peak_cell_type, cell_specific_ocr_thresh[open_peak_cell_type]))
+        df_peaks_filtered = df_peaks.query(" | ".join(query_parts))
 
 
     log("filter_snps_in_ocrs", "filter df_peaks", LogStatus.End)
