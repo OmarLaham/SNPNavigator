@@ -44,7 +44,7 @@ gwas_pval_thresh = 5 * (10 ** -8)
 peak_open_thresh = 8 # I averaged cols from same cell type -> calculated mins of averages -> average all result mins together!
 
 
-def filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_matrix_column_names, open_peak_cell_types, close_to_another_ocr): #filter snps using OCRs (Open Chromatin Regions)
+def filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_matrix_column_names, open_peak_cell_types, cell_specific_ocrs, close_to_another_ocr): #filter snps using OCRs (Open Chromatin Regions)
 
     # filter df_peaks to include only peaks that are open for selected cell types in (open_peak_cell_types). This will make iteration faster
     log("filter_snps_in_ocrs", "filter df_peaks", LogStatus.Start)
@@ -53,11 +53,28 @@ def filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_
     #split str into lst.
     open_peak_cell_types = open_peak_cell_types.split(",")
 
-    for col_name in peaks_count_matrix_column_names:
-        for open_peak_cell_type in open_peak_cell_types:
-            if open_peak_cell_type in col_name:
-                filter_query_cell_types.append(open_peak_cell_type)
-    df_peaks_filtered = df_peaks.query("specific_for_cell_type == @filter_query_cell_types")
+    if cell_specific_ocrs == "yes": # filter for open cell-type specific OCRs
+        for col_name in peaks_count_matrix_column_names:
+            for open_peak_cell_type in open_peak_cell_types:
+                if open_peak_cell_type in col_name:
+                    filter_query_cell_types.append(open_peak_cell_type)
+        df_peaks_filtered = df_peaks.query("specific_for_cell_type == @filter_query_cell_types")
+    elif cell_specific_ocrs == "no": # filter for OCRs regardless of cell-type specifity
+
+        cell_specific_ocr_thresh = {
+            "GLU": 0,
+            "GABA": 0,
+            "OLIG": 0,
+            "MGAS": 0
+        }
+
+        for col_name in peaks_count_matrix_column_names:
+            for open_peak_cell_type in open_peak_cell_types:
+                if open_peak_cell_type in col_name:
+                    filter_query_cell_types.append("Avg_{0} > {1}".format(col_name, cell_specific_ocr_thresh[open_peak_cell_type]))
+        df_peaks_filtered = df_peaks.query(filter_query_cell_types.join(" | "))
+
+
     log("filter_snps_in_ocrs", "filter df_peaks", LogStatus.End)
     log("len(filtered_peaks)", len(df_peaks_filtered))
 
@@ -203,7 +220,7 @@ def filter_to_match_mismatch_other_condition(run_id, dict_run_config, df_selecte
 
     return df_selected_snps
 
-def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, open_peak_cell_types, cpg_island, close_to_another_ocr, condition_2_match, condition_3_match):
+def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, open_peak_cell_types, cell_specific_ocrs, cpg_island, close_to_another_ocr, condition_2_match, condition_3_match):
 
     dict_run_config = helpers.get_run_config(run_id)
 
@@ -300,7 +317,7 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
             ",")  # e.g. "AVG_GLUT,AVG_GABA,AVG_OLIG"
 
         log("query", "filter_snps_in_ocrs", LogStatus.Start)
-        df_snps = filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_matrix_column_names, open_peak_cell_types, close_to_another_ocr)
+        df_snps = filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_matrix_column_names, open_peak_cell_types, cell_specific_ocrs, close_to_another_ocr)
         log("query", "filter_snps_in_ocrs", LogStatus.End)
 
         if cpg_island != 0:
