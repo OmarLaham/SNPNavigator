@@ -361,4 +361,10 @@
       initSNPQuery();
     });
 
+    //enable bootstrap toggles
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip();
+    })
+
+
   });

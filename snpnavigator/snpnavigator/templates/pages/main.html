@@ -66,7 +66,11 @@
         </li>
       </ul>
       <span class="fst-italic text-secondary">- OR operator is used in case of multiple selection.</span>
-      <h6 class="mt-1">Only cell-type specific OCRs:</h6>
+      <h6 class="mt-1">
+        Only cell-type specific OCRs:
+        &nbsp;
+        <i class="fas fa-exclamation-circle" data-toggle="tooltip" data-placement="top" title='"For the individual cell types, OCRs were considered specific to a cell if they were significantly more accessible in all pairwise comparisons against the remaining three cell types, thus yielding a non-overlapping set of cell-specific OCRs." - From the paper with DOI: https://doi.org/10.1038/s41467-020-19319-2'></i>
+      </h6>
       <select id="lstCellSpecificOCRs" class="form-select" aria-label="Filter only for cell-type specific OCRs">
         <option value="no" selected>No</option>
         <option value="yes">Yes</option>
@@ -124,6 +128,8 @@
         <div class="col col-7 form-check form-switch">
           <input class="form-check-input" type="checkbox" id="toggleReverseResults">
           <label class="form-check-label" for="toggleReverseResults">Reverse results</label>
+          &nbsp;
+          <i class="fas fa-exclamation-circle" data-toggle="tooltip" data-placement="top" title='Use this option to get the unselected SNPs for export'></i>
         </div>
       </div>
     </div>
