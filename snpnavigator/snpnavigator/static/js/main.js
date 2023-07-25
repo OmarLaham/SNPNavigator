@@ -298,9 +298,9 @@
     let close_to_another_ocr = ($("#snpCloseToAnotherOCR").is(':checked')) ? 1 : 0;
     var condition_2_match = $("input:radio[name ='radioCondition2Match']:checked").val();
     var condition_3_match = $("input:radio[name ='radioCondition3Match']:checked").val();
+    let reverse_results = ($("#toggleReverseResults").is(':checked')) ? 1 : 0;
 
-
-    let get_request_link = `/json_snp_query/${run_id}/${spec_chr}/${spec_gen_region}/${filter_eQTL}/${open_peak_cell_types}/${cell_specific_ocrs}/${cpg_island}/${close_to_another_ocr}/${condition_2_match}/${condition_3_match}`;
+    let get_request_link = `/json_snp_query/${run_id}/${spec_chr}/${spec_gen_region}/${filter_eQTL}/${open_peak_cell_types}/${cell_specific_ocrs}/${cpg_island}/${close_to_another_ocr}/${condition_2_match}/${condition_3_match}/${reverse_results}`;
 
     let TEST_MODE = false;
     if(TEST_MODE) {

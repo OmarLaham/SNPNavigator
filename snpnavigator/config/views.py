@@ -214,7 +214,7 @@ def filter_to_match_mismatch_other_condition(run_id, dict_run_config, df_selecte
 
     return df_selected_snps
 
-def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, open_peak_cell_types, cell_specific_ocrs, cpg_island, close_to_another_ocr, condition_2_match, condition_3_match):
+def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, open_peak_cell_types, cell_specific_ocrs, cpg_island, close_to_another_ocr, condition_2_match, condition_3_match, reverse_results):
 
     dict_run_config = helpers.get_run_config(run_id)
 
@@ -229,6 +229,7 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
     # rename some cols of gwas df for standardization
     df_snps = df_snps.rename(columns={
         dict_run_config["condition_1_pval_col"]: "pval",
+        dict_run_config["condition_1_neg_log10_pval"]: "-log10(pval)",
         dict_run_config["condition_1_snp_id_col"]: "id",
         dict_run_config["condition_1_chrom_col"]: "chr",
         dict_run_config["condition_1_pos_col"]: "pos",
@@ -242,14 +243,14 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
     # filter using GWAS pval thresh
     df_snps = df_snps.query("pval <= {0}".format(gwas_pval_thresh))
 
-    # calc -log10(pval)
-    log("query", "calc snps -log10(pval)", LogStatus.Start)
-    df_snps["-log10(pval)"] = ""
-    df_snps["-log10(pval)"] = df_snps.apply(
-        lambda row: -1 * math.log10(row["pval"])
-        , axis=1
-    )
-    log("query", "calc snps -log10(pval)", LogStatus.End)
+    # # calc -log10(pval)
+    # log("query", "calc snps -log10(pval)", LogStatus.Start)
+    # df_snps["-log10(pval)"] = ""
+    # df_snps["-log10(pval)"] = df_snps.apply(
+    #     lambda row: -1 * math.log10(row["pval"])
+    #     , axis=1
+    # )
+    # log("query", "calc snps -log10(pval)", LogStatus.End)
 
     # sort by chr then by pos
     log("query", "sorting df snps by chr then pos", LogStatus.Start)
@@ -328,6 +329,18 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
     log("query", "grouping snps into series for Manhatan plot", LogStatus.Start)
 
     df_snps = df_snps.reset_index()
+
+    # reverse results if required in the query
+    if reverse_results == 1:
+        log("query", "reversing query results on demand", LogStatus.Start)
+        original_selection_snp_ids = df_snps["id"].values.tolist()
+        # copy df of all SNPs
+        df_snps = df_all_snps.copy()
+        # keep only certain cols in a specific order
+        df_snps = df_snps[["id", "chr", "pos", "pval", "eqtl_gene_id", "origin_allele", "mutation_allele"]]
+        # reverse the query
+        df_snps = df_snps.query("id!=@original_selection_snp_ids")
+        log("query", "reversing query results on demand", LogStatus.End)
 
     # create Manhattan plot data
     df_snps_manhattan = df_all_snps.copy().reset_index()
