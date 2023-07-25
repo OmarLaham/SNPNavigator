@@ -75,11 +75,11 @@
       <h6>SNP Filter</h6>
       <ul id="lst-snp-filter" class="list-group">
         <li class="list-group-item">
-          <input class="form-check-input me-1" type="checkbox" value="" id="snpCpGIsland">
+          <input class="form-check-input me-1" type="checkbox" value="" id="snpCpGIsland" disabled>
           <label class="form-check-label" for="snpCpGIsland">Introduces / removes a CpG island</label>
         </li>
         <li class="list-group-item">
-          <input class="form-check-input me-1" type="checkbox" value="" id="snpCloseToAnotherOCR">
+          <input class="form-check-input me-1" type="checkbox" value="" id="snpCloseToAnotherOCR" disabled>
           <label class="form-check-label" for="snpCloseToAnotherOCR">Close to another OCR (<= 2k bp)</label>
         </li>
       </ul>
@@ -117,7 +117,15 @@
       </div>
 
       <br />
-      <button id="btnFilter" type="button" class="btn btn-primary">Filter & Visualize</button>
+      <div class="row">
+        <div class="col col-5">
+          <button id="btnFilter" type="button" class="btn btn-primary">Filter & Visualize</button>
+        </div>
+        <div class="col col-7 form-check form-switch">
+          <input class="form-check-input" type="checkbox" id="toggleReverseResults">
+          <label class="form-check-label" for="toggleReverseResults">Reverse results</label>
+        </div>
+      </div>
     </div>
 
     <!-- main -->
@@ -188,7 +196,6 @@
                           <th>Pos</th>
                           <th>P-val</th>
                           <th>eQTL Gene ID</th>
-                          <th>eQTL FDR</th>
                           <th>Operations</th>
                         </tr>
                     </thead>

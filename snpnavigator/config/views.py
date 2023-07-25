@@ -54,19 +54,12 @@ def filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_
     open_peak_cell_types = open_peak_cell_types.split(",")
 
     if cell_specific_ocrs == "yes": # filter for open cell-type specific OCRs
-        for col_name in peaks_count_matrix_column_names:
-            for open_peak_cell_type in open_peak_cell_types:
-                if open_peak_cell_type in col_name:
-                    query_parts.append(open_peak_cell_type)
+        #@for col_name in peaks_count_matrix_column_names:
+        for open_peak_cell_type in open_peak_cell_types:
+            #if open_peak_cell_type in col_name:
+            query_parts.append(open_peak_cell_type)
         df_peaks_filtered = df_peaks.query("specific_for_cell_type == @query_parts")
     elif cell_specific_ocrs == "no": # filter for OCRs regardless of cell-type specificity
-
-        # cell_specific_ocr_thresh = { #TODO: clean if not used
-        #     "GLU": 0,
-        #     "GABA": 0,
-        #     "OLIG": 0,
-        #     "MGAS": 0
-        # }
 
         #for col_name in peaks_count_matrix_column_names:
         for open_peak_cell_type in open_peak_cell_types:
@@ -87,7 +80,8 @@ def filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_
                                            keep_default_na=False) #keep_default_na=False is important so empty string or "NA" strings are not converted to pd.NaN)
 
     #keep only SNPs laying in open OCRs of selected cell types
-    df_mapping_snps_to_peaks = df_mapping_snps_to_peaks[df_mapping_snps_to_peaks["peak_name"].isin(df_peaks_filtered["name"].values.tolist())]
+    filtered_peak_names = df_peaks_filtered["name"].values.tolist()
+    df_mapping_snps_to_peaks = df_mapping_snps_to_peaks.query("peak_name==@filtered_peak_names")
 
     # filter to SNPs that lay in OCR and close to another OCR
     if close_to_another_ocr == 1:
@@ -283,12 +277,12 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
 
 
     #keep cols that we really need
-    df_snps = df_snps[["id", "chr", "pos", "pval", "eqtl_gene_id", "eqtl_fdr", "origin_allele", "mutation_allele"]]
+    df_snps = df_snps[["id", "chr", "pos", "pval", "eqtl_gene_id", "origin_allele", "mutation_allele"]]
 
     # select SNPs that overlap with eQTL (FDR < 0.05) if overlap_eqtl is selected
     if overlap_eqtl != "NA" and overlap_eqtl == "overlap-eqtl":
         log("query", "filter_overlap_eQTL", LogStatus.Start)
-        df_snps = df_snps.query("eqtl_fdr != '-'") # NOTE: when I mapped SNPs to eQTLs I mapped only to eQTLs with FDR < 0.05 and if there is no overlapping eQTL I used FDR='-'
+        df_snps = df_snps.query("eqtl_gene_id != '-'") # NOTE: when I mapped SNPs to eQTLs I mapped only to eQTLs with FDR < 0.05 and if there is no overlapping eQTL I used eqtl_gene_id='-'
         log("query", "filter_overlap_eQTL", LogStatus.End)
 
 
@@ -296,9 +290,10 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
     #df_selected_snps = df_snps.copy()
     snps_cpg_islands = None
     if open_peak_cell_types != "NA":
+        log("query", "match with peak data", LogStatus.Start)
 
         # integrate ATAC-seq peaks if included in queries
-        df_peaks = pd.read_csv(path.join(settings.MEDIA_ROOT, "data", "peaks", dict_run_config["condition_1_name"],
+        df_peaks = pd.read_csv(path.join(settings.MEDIA_ROOT, "runs", run_id, "auto_generated_files", "peaks", dict_run_config["condition_1_name"],
                                          dict_run_config["condition_1_peaks_file"]),
                                sep="\t", index_col=False)
 
@@ -324,6 +319,8 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
             log("query", "filter_snps_for_cpg_islands", LogStatus.Start)
             df_snps, snps_cpg_islands = filter_snps_for_cpg_islands(run_id, df_snps, gwas_genome_version)
             log("query", "filter_snps_for_cpg_islands", LogStatus.End)
+
+        log("query", "match with peak data", LogStatus.End)
 
 
     # group snps into chromosomes for Manhattan plot
@@ -388,17 +385,18 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
                     "<a class='tbl-snps-lnk' target='_blank' href='https://www.ebi.ac.uk/gwas/variants/{0}'>GWAS Catalog</a>".format(row["id"])
         , axis=1
     )
-    "<a href='javascript:;'>some link</a>"
-    # modify "eQTL Gene ID" col as an HTML link
-    df_snps["eqtl_gene_id"] = df_snps.apply(
-        lambda row: "<a class='tbl-snps-lnk' target='_blank' href='http://www.ensembl.org/Homo_sapiens/Gene/Summary?g={0}'>{0}</a>".format(row["eqtl_gene_id"])
-        , axis=1
-    )
+
+    # modify "eQTL Gene ID" col as an HTML link. A SNP coule have multiple eQTL entries
+    if len(df_snps):
+        df_snps["eqtl_gene_id"] = df_snps.apply(
+            lambda row: helpers.format_eqtl_gene_ids_html(row["eqtl_gene_id"])
+            , axis=1
+        )
 
 
 
     return JsonResponse({
-        "selected_snps": df_snps[["id", "chr", "pos", "pval", "eqtl_gene_id", "eqtl_fdr", "operations"]].values.tolist(),
+        "selected_snps": df_snps[["id", "chr", "pos", "pval", "eqtl_gene_id", "operations"]].values.tolist(),
         "snps_cpg_islands": snps_cpg_islands if snps_cpg_islands else [],
         "manhattan": {
             "peaks": [],
@@ -406,4 +404,5 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
             "series": manhattan_series
         }
     })
+
 

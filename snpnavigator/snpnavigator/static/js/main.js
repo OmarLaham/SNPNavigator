@@ -267,6 +267,22 @@
     return;
   }
 
+  var open_peak_cell_types = "NA";
+  let update_open_peak_cell_types = function() {
+        open_peak_cell_types = Array();
+        // update the status of overall peak cell_types
+        $('.atacCellType').each(function() {
+            if ($(this).prop('checked')) {
+                open_peak_cell_types.push($(this).data('atac-cell-type'));
+            }
+        });
+        if(open_peak_cell_types.length > 0) {
+          open_peak_cell_types = open_peak_cell_types.join(",")
+        } else {
+          open_peak_cell_types = "NA"
+        }
+  }
+
   function initSNPQuery() {
 
     //start loading spinner and hide results from previous query (if available)
@@ -277,21 +293,12 @@
     let spec_chr = $("#lstSpecChr").val();
     let spec_gen_region = $('#lstGenomicRegion').val();
     let filter_eQTL = $('#lsteQTL').val();
-    var open_peak_cell_types = Array();
     var cell_specific_ocrs = $('#lstCellSpecificOCRs').val();
     let cpg_island = ($("#snpCpGIsland").is(':checked')) ? 1: 0;
     let close_to_another_ocr = ($("#snpCloseToAnotherOCR").is(':checked')) ? 1 : 0;
     var condition_2_match = $("input:radio[name ='radioCondition2Match']:checked").val();
     var condition_3_match = $("input:radio[name ='radioCondition3Match']:checked").val();
 
-    $('.atacCellType:checked').each(function() {
-        open_peak_cell_types.push($(this).data('atac-cell-type'));
-    });
-    if(open_peak_cell_types.length > 0) {
-      open_peak_cell_types = open_peak_cell_types.join(",")
-    } else {
-      open_peak_cell_types = "NA"
-    }
 
     let get_request_link = `/json_snp_query/${run_id}/${spec_chr}/${spec_gen_region}/${filter_eQTL}/${open_peak_cell_types}/${cell_specific_ocrs}/${cpg_island}/${close_to_another_ocr}/${condition_2_match}/${condition_3_match}`;
 
@@ -334,6 +341,21 @@
 
   //send initial SNP query
   $(document).ready(function() {
+
+    $('.atacCellType').change(function() {
+
+        update_open_peak_cell_types();
+
+        //disable other peak filters if no peak cell type is checked, and enable otherwise
+        if (open_peak_cell_types == "NA") {
+            $('#snpCpGIsland').attr("disabled", true);
+            $('#snpCloseToAnotherOCR').attr("disabled", true);
+        } else {
+            $('#snpCpGIsland').attr("disabled", false);
+            $('#snpCloseToAnotherOCR').attr("disabled", false);
+        }
+
+    });
 
     $('#btnFilter').click(function() {
       initSNPQuery();

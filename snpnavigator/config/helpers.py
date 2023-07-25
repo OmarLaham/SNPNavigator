@@ -23,3 +23,19 @@ class LogStatus(Enum):
     End = "End"
 def log(main_message, sub_message, status = None):
     print("Debug: > {0}: [{1}] {2}".format(main_message, status if status else "Status NA", sub_message))
+
+
+def format_eqtl_gene_ids_html(eqtl_gene_id_value):
+    if eqtl_gene_id_value == "-":
+        return ""
+
+    eqtl_gene_ids = eqtl_gene_id_value.split(",")
+    html_generated_links = []
+
+    for eqtl_gene_id in eqtl_gene_ids:
+        eqtl_gene_id = eqtl_gene_id.strip()
+        html_generated_links.append(
+            "<a class='tbl-snps-lnk' target='_blank' href='http://www.ensembl.org/Homo_sapiens/Gene/Summary?g={0}'>{0}</a>".format(
+                eqtl_gene_id))
+
+    return ", ".join(html_generated_links)
