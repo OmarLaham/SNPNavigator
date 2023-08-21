@@ -8,6 +8,12 @@
 
     <!-- sidebar -->
     <div class="col col-3">
+      <h6>PVAL threshold</h6>
+      <select id="lstPValThresh" class="form-select" aria-label="Select PVAL Threshold">
+        <option value="loose" selected>&lt; (10 ^ -6)</option>
+        <option value="tight">&lt; 5 * (10 ^ -8)</option>
+      </select>
+      <hr />
       <h6>Specific Chromosome</h6>
       <select id="lstSpecChr" class="form-select" aria-label="Filter for a specific chromosome">
         <option value="NA" selected>None</option>
@@ -90,7 +96,7 @@
       <hr />
       <h6>Other Disease GWAS</h6>
       <div>
-          MDD:<br />
+{#          MDD:<br />#}
           <div class="form-check form-check-inline">
             <input class="form-check-input" type="radio" name="radioCondition2Match" id="radioCondition2Match1" value="NA" checked>
             <label class="form-check-label" for="radioCondition2Match1">No filter</label>
@@ -104,19 +110,19 @@
             <label class="form-check-label" for="radioCondition2Match3">Mismatch</label>
           </div>
           <br />
-          BD:<br />
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="radioCondition3Match" id="radioCondition3Match1" value="NA" checked>
-            <label class="form-check-label" for="radioCondition3Match1">No filter</label>
-          </div>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="radioCondition3Match" id="radioCondition3Match2" value="match">
-            <label class="form-check-label" for="radioCondition3Match2">Match</label>
-          </div>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="radioCondition3Match" id="radioCondition3Match3" value="mismatch">
-            <label class="form-check-label" for="radioCondition3Match3">Mismatch</label>
-          </div>
+{#          BD:<br />#}
+{#          <div class="form-check form-check-inline">#}
+{#            <input class="form-check-input" type="radio" name="radioCondition3Match" id="radioCondition3Match1" value="NA" checked>#}
+{#            <label class="form-check-label" for="radioCondition3Match1">No filter</label>#}
+{#          </div>#}
+{#          <div class="form-check form-check-inline">#}
+{#            <input class="form-check-input" type="radio" name="radioCondition3Match" id="radioCondition3Match2" value="match">#}
+{#            <label class="form-check-label" for="radioCondition3Match2">Match</label>#}
+{#          </div>#}
+{#          <div class="form-check form-check-inline">#}
+{#            <input class="form-check-input" type="radio" name="radioCondition3Match" id="radioCondition3Match3" value="mismatch">#}
+{#            <label class="form-check-label" for="radioCondition3Match3">Mismatch</label>#}
+{#          </div>#}
 
       </div>
 

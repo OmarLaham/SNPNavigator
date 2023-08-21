@@ -292,17 +292,18 @@
     const current_url = window.location.href;
     const current_url_splitted = current_url.split("/");
     const run_id = current_url_splitted[current_url_splitted.length - 1];
-    let spec_chr = $("#lstSpecChr").val();
-    let spec_gen_region = $('#lstGenomicRegion').val();
-    let filter_eQTL = $('#lsteQTL').val();
+    const pval_thresh = $('#lstPValThresh').val();
+    const spec_chr = $("#lstSpecChr").val();
+    const spec_gen_region = $('#lstGenomicRegion').val();
+    const filter_eQTL = $('#lsteQTL').val();
     var cell_specific_ocrs = $('#lstCellSpecificOCRs').val();
-    let cpg_island = ($("#snpCpGIsland").is(':checked')) ? 1: 0;
-    let close_to_another_ocr = ($("#snpCloseToAnotherOCR").is(':checked')) ? 1 : 0;
+    const cpg_island = ($("#snpCpGIsland").is(':checked')) ? 1: 0;
+    const close_to_another_ocr = ($("#snpCloseToAnotherOCR").is(':checked')) ? 1 : 0;
     var condition_2_match = $("input:radio[name ='radioCondition2Match']:checked").val();
-    var condition_3_match = $("input:radio[name ='radioCondition3Match']:checked").val();
+    var condition_3_match = "NA";// TODO: remove condition 3 if not needed //$("input:radio[name ='radioCondition3Match']:checked").val();
     let reverse_results = ($("#toggleReverseResults").is(':checked')) ? 1 : 0;
 
-    let get_request_link = `/json_snp_query/${run_id}/${spec_chr}/${spec_gen_region}/${filter_eQTL}/${open_peak_cell_types}/${cell_specific_ocrs}/${cpg_island}/${close_to_another_ocr}/${condition_2_match}/${condition_3_match}/${reverse_results}`;
+    let get_request_link = `/json_snp_query/${run_id}/${pval_thresh}/${spec_chr}/${spec_gen_region}/${filter_eQTL}/${open_peak_cell_types}/${cell_specific_ocrs}/${cpg_island}/${close_to_another_ocr}/${condition_2_match}/${condition_3_match}/${reverse_results}`;
 
     let TEST_MODE = false;
     if(TEST_MODE) {

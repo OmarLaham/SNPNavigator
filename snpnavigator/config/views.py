@@ -211,7 +211,7 @@ def filter_to_match_mismatch_other_condition(run_id, dict_run_config, df_selecte
 
     return df_selected_snps
 
-def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, open_peak_cell_types, cell_specific_ocrs, cpg_island, close_to_another_ocr, condition_2_match, condition_3_match, reverse_results):
+def json_snp_query(request, run_id, pval_thresh, spec_chr, spec_gen_region, overlap_eqtl, open_peak_cell_types, cell_specific_ocrs, cpg_island, close_to_another_ocr, condition_2_match, condition_3_match, reverse_results):
 
     dict_run_config = helpers.get_run_config(run_id)
 
@@ -238,7 +238,10 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
     df_snps = df_snps[df_snps["id"].str.startswith('rs', na=False)]
 
     # filter using GWAS pval thresh
-    df_snps = df_snps.query("pval <= {0}".format(gwas_pval_thresh))
+    if pval_thresh == "loose":
+        df_snps = df_snps.query("pval <= {0}".format(10 ** -6))
+    elif pval_thresh == "tight":
+        df_snps = df_snps.query("pval <= {0}".format(5 * (10 ** -8)))
 
     # # calc -log10(pval)
     # log("query", "calc snps -log10(pval)", LogStatus.Start)
