@@ -182,7 +182,7 @@ def filter_snps_for_genomic_regions(run_id, df_selected_snps, gwas_genome_versio
     df_selected_snps = df_selected_snps[df_selected_snps["id"].isin(selected_snps_ids)]
     return df_selected_snps
 
-def filter_to_match_mismatch_other_condition(run_id, dict_run_config, df_selected_snps, condition_number, condition_match):
+def filter_to_match_mismatch_other_condition(run_id, dict_run_config, df_selected_snps, condition_number, condition_match, pval_thresh):
 
     # load condition_2 GWAS
     condition_gwas_sep = dict_run_config["condition_{0}_gwas_file_sep".format(condition_number)]
@@ -199,6 +199,9 @@ def filter_to_match_mismatch_other_condition(run_id, dict_run_config, df_selecte
         condition_pval_col: "pval",
         condition_snp_id_col: "id"
     })
+
+    # filter df_gwas_condition using according to pval_thresh selected by user
+    df_gwas_condition = df_gwas_condition.query("pval < {0}".format(pval_thresh))
 
     log("query", "load condition {0} GWAS".format(condition_number), LogStatus.End)
     log("query", "filter to match/mismatch condition {0}.".format(condition_number), LogStatus.Start)
@@ -239,9 +242,11 @@ def json_snp_query(request, run_id, pval_thresh, spec_chr, spec_gen_region, over
 
     # filter using GWAS pval thresh
     if pval_thresh == "loose":
-        df_snps = df_snps.query("pval <= {0}".format(10 ** -6))
+        pval_thresh = 10 ** -6
     elif pval_thresh == "tight":
-        df_snps = df_snps.query("pval <= {0}".format(5 * (10 ** -8)))
+        pval_thresh = 5 * (10 ** -8)
+
+    df_snps = df_snps.query("pval <= {0}".format(pval_thresh))
 
     # # calc -log10(pval)
     # log("query", "calc snps -log10(pval)", LogStatus.Start)
@@ -267,10 +272,10 @@ def json_snp_query(request, run_id, pval_thresh, spec_chr, spec_gen_region, over
 
     # filter for match/mismatch with condition_2
     if condition_2_match != "NA":
-        df_snps = filter_to_match_mismatch_other_condition(run_id, dict_run_config, df_snps, 2, condition_2_match)
+        df_snps = filter_to_match_mismatch_other_condition(run_id, dict_run_config, df_snps, 2, condition_2_match, pval_thresh)
 
     if condition_3_match != "NA":
-        df_snps = filter_to_match_mismatch_other_condition(run_id, dict_run_config, df_snps, 3, condition_3_match)
+        df_snps = filter_to_match_mismatch_other_condition(run_id, dict_run_config, df_snps, 3, condition_3_match, pval_thresh)
 
     # filter for genomic region if passed
     if spec_gen_region != "NA":
