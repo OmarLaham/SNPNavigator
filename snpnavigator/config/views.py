@@ -46,6 +46,8 @@ peak_open_thresh = 8 # I averaged cols from same cell type -> calculated mins of
 
 def filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_matrix_column_names, open_peak_cell_types, cell_specific_ocrs, close_to_another_ocr): #filter snps using OCRs (Open Chromatin Regions)
 
+    dict_run_config = helpers.get_run_config(run_id)
+
     # filter df_peaks to include only peaks that are open for selected cell types in (open_peak_cell_types). This will make iteration faster
     log("filter_snps_in_ocrs", "filter df_peaks", LogStatus.Start)
     query_parts = []
@@ -54,27 +56,22 @@ def filter_snps_in_ocrs(run_id, df_snps, df_peaks, peak_cell_types, peaks_count_
     open_peak_cell_types = open_peak_cell_types.split(",")
 
     if cell_specific_ocrs == "yes": # filter for open cell-type specific OCRs
-        #@for col_name in peaks_count_matrix_column_names:
         for open_peak_cell_type in open_peak_cell_types:
-            #if open_peak_cell_type in col_name:
             query_parts.append(open_peak_cell_type)
         df_peaks_filtered = df_peaks.query("specific_for_cell_type == @query_parts")
-    elif cell_specific_ocrs == "no": # filter for OCRs regardless of cell-type specificity
 
-        #for col_name in peaks_count_matrix_column_names:
+    elif cell_specific_ocrs == "no": # filter for OCRs regardless of cell-type specificity
         for open_peak_cell_type in open_peak_cell_types:
-            #if open_peak_cell_type in col_name:
             query_parts.append("ocr_{0} == 1".format(open_peak_cell_type))
         df_peaks_filtered = df_peaks.query(" | ".join(query_parts))
 
 
     log("filter_snps_in_ocrs", "filter df_peaks", LogStatus.End)
-    log("len(filtered_peaks)", len(df_peaks_filtered))
 
     # open mapping_snps_to_peaks file to get IDs of SNPs that lay in the selected open peaks
     # TODO: create auto generation process for the "mapping_snps_to_peaks" file while preparing run.
     log("filter_snps_in_ocrs", "read mapping_snps_to_peaks_file", LogStatus.Start)
-    snp_peaks_mapping_file_path = path.join(settings.MEDIA_ROOT, "runs", run_id, "auto_generated_files", "sz_mapping_snps_to_peaks.tsv")
+    snp_peaks_mapping_file_path = path.join(settings.MEDIA_ROOT, "runs", run_id, "auto_generated_files", "{0}_mapping_snps_to_peaks.tsv".format(dict_run_config["condition_1_name"]))
     df_mapping_snps_to_peaks = pd.read_csv(snp_peaks_mapping_file_path,
                                            sep="\t",
                                            keep_default_na=False) #keep_default_na=False is important so empty string or "NA" strings are not converted to pd.NaN)
@@ -294,9 +291,9 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
         log("query", "match with peak data", LogStatus.Start)
 
         # integrate ATAC-seq peaks if included in queries
-        df_peaks = pd.read_csv(path.join(settings.MEDIA_ROOT, "runs", run_id, "auto_generated_files", "peaks", dict_run_config["condition_1_name"],
+        df_peaks = pd.read_csv(path.join(settings.MEDIA_ROOT, "data", "peaks", dict_run_config["peaks_condition_name"],
                                          dict_run_config["condition_1_peaks_file"]),
-                               sep="\t", index_col=False)
+                                        sep="\t", index_col=False)
 
         # rename some cols of peaks df for standardization
         df_peaks = df_peaks.rename(columns={
@@ -393,8 +390,8 @@ def json_snp_query(request, run_id, spec_chr, spec_gen_region, overlap_eqtl, ope
     # add "Operations" col to use in the UI.
     df_snps["operations"] = ""
     df_snps["operations"] = df_snps.apply(
-        lambda row: "<a class='tbl-snps-lnk' target='_blank' href='https://www.ncbi.nlm.nih.gov/snp/?term={0}'>dbSNP</a>".format(row["id"]) + ", " +
-                    "<a class='tbl-snps-lnk' target='_blank' href='https://www.ncbi.nlm.nih.gov/clinvar/?term={0}'>ClinVar</a>".format(row["id"]) + ", " +
+        lambda row: "<a class='tbl-snps-lnk' target='_blank' href='https://www.ncbi.nlm.nih.gov/snp/?term={0}'>dbSNP</a>".format(row["id"]) + " - " +
+                    "<a class='tbl-snps-lnk' target='_blank' href='https://www.ncbi.nlm.nih.gov/clinvar/?term={0}'>ClinVar</a>".format(row["id"]) + " - " +
                     "<a class='tbl-snps-lnk' target='_blank' href='https://www.ebi.ac.uk/gwas/variants/{0}'>GWAS Catalog</a>".format(row["id"])
         , axis=1
     )

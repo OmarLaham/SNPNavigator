@@ -289,7 +289,9 @@
     $('#queryResultsSpinner').removeClass("d-none");
     $("#queryResultsWrapper").addClass("d-none");
 
-    let run_id = "run_1";
+    const current_url = window.location.href;
+    const current_url_splitted = current_url.split("/");
+    const run_id = current_url_splitted[current_url_splitted.length - 1];
     let spec_chr = $("#lstSpecChr").val();
     let spec_gen_region = $('#lstGenomicRegion').val();
     let filter_eQTL = $('#lsteQTL').val();
@@ -321,7 +323,9 @@
         }
         tblSNPs = $('#dtSNPs').DataTable({
             data: selected_snps,
-            order: [[1, 'asc'], [2, 'asc']]
+            order: [[1, 'asc'], [2, 'asc']],
+            dom: 'Bfrtip',
+            buttons: ['csv', 'excel']
         });
 
         //plot Manhattan

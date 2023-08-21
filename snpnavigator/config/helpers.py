@@ -38,4 +38,4 @@ def format_eqtl_gene_ids_html(eqtl_gene_id_value):
             "<a class='tbl-snps-lnk' target='_blank' href='http://www.ensembl.org/Homo_sapiens/Gene/Summary?g={0}'>{0}</a>".format(
                 eqtl_gene_id))
 
-    return ", ".join(html_generated_links)
+    return " ".join(html_generated_links)
